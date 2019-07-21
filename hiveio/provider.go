@@ -1,6 +1,7 @@
 package hiveio
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -53,7 +54,7 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("HIO_PORT", "8443"),
 				Description: "hostname or ip address of the server",
 			},
-			"hio_insecure": {
+			"insecure": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -73,7 +74,7 @@ func Provider() *schema.Provider {
 			// "nutanix_volume_groups":          dataSourceNutanixVolumeGroups(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			//"proxmox_vm_qemu": resourceVmQemu(),
+			"hiveio_profile": resourceProfile(),
 			// TODO - storage_iso
 			// TODO - bridge
 			// TODO - vm_qemu_template
@@ -86,7 +87,8 @@ func Provider() *schema.Provider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Connecting to %s", d.Get("host").(string))
 
-	client := &rest.Client{Host: d.Get("host").(string), Port: d.Get("port").(uint), AllowInsecure: d.Get("insecure").(bool)}
-	err := client.Login(d.Get("user").(string), d.Get("password").(string), d.Get("realm").(string))
+	client := &rest.Client{Host: d.Get("host").(string), Port: uint(d.Get("port").(int)), AllowInsecure: d.Get("insecure").(bool)}
+	err := client.Login(d.Get("username").(string), d.Get("password").(string), d.Get("realm").(string))
+	fmt.Println(err)
 	return client, err
 }
