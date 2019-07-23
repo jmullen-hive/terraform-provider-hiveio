@@ -47,10 +47,6 @@ func resourceProfile() *schema.Resource {
 		Delete: resourceProfileDelete,
 
 		Schema: map[string]*schema.Schema{
-			/*"profile_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},*/
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -59,45 +55,110 @@ func resourceProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"ad_domain": &schema.Schema{
-				Type:     schema.TypeString,
+			"ad_config": {
+				Type:     schema.TypeList,
 				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"domain": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"username": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"password": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+						"user_group": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"ou": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
-			"ad_ou": &schema.Schema{
-				Type:     schema.TypeString,
+			"user_volumes": {
+				Type:     schema.TypeList,
 				Optional: true,
-			},
-			"user_group": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"ad_username": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"ad_password": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backup_schedule": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+						"repository": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"size": {
+							Type:      schema.TypeInt,
+							Required:  true,
+							Sensitive: true,
+						},
+						"target": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
-func resourceProfileCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*rest.Client)
+func profileFromResource(d *schema.ResourceData) *rest.Profile {
 	var profile *rest.Profile
 	profile = &rest.Profile{
 		Name:     d.Get("name").(string),
 		Timezone: d.Get("timezone").(string),
 	}
-	// var adConfig *struct{
-	// 	Username:  d.Get("ad_username").(string),
-	// 	Password:  d.Get("ad_password").(string),
-	// 	UserGroup: d.Get("ad_user_group").(string),
-	// 	Domain:    d.Get("ad_domain").(string),
-	// 	OU:        d.Get("ad_ou").(string),
-	// }
+
+	if d.Id() != "" {
+		profile.ID = d.Id()
+	}
+	if _, ok := d.GetOk("ad_config"); ok {
+		var adConfig rest.ProfileADConfig
+		adConfig.Domain = d.Get("ad_config.0.domain").(string)
+		adConfig.Username = d.Get("ad_config.0.username").(string)
+		adConfig.Password = d.Get("ad_config.0.password").(string)
+		adConfig.UserGroup = d.Get("ad_config.0.user_group").(string)
+		if ou, ok := d.GetOk("ad_config.0.ou"); ok {
+			adConfig.Ou = ou.(string)
+		}
+		profile.AdConfig = &adConfig
+	}
+
+	if _, ok := d.GetOk("user_volumes"); ok {
+		var uv rest.ProfileUserVolumes
+		uv.Repository = d.Get("user_volumes.0.repository").(string)
+		uv.Size = d.Get("user_volumes.0.size").(int)
+		if backup, ok := d.GetOk("user_volumes.0.backup_schedule"); ok {
+			uv.BackupSchedule = backup.(int)
+		}
+		if target, ok := d.GetOk("user_volumes.0.target"); ok {
+			uv.Target = target.(string)
+		}
+		profile.UserVolumes = &uv
+	}
+	return profile
+}
+
+func resourceProfileCreate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*rest.Client)
+	profile := profileFromResource(d)
 	_, err := profile.Create(client)
+	if err != nil {
+		return err
+	}
 	profile, err = client.GetProfileByName(profile.Name)
 	if err != nil {
 		return err
@@ -114,10 +175,36 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	d.SetId(profile.ID)
+
 	d.Set("name", profile.Name)
-	d.Set("profile_id", profile.ID)
 	d.Set("timezone", profile.Timezone)
+
+	if _, ok := d.GetOk("ad_config"); ok {
+		var adConfig rest.ProfileADConfig
+		adConfig.Domain = d.Get("ad_config.0.domain").(string)
+		adConfig.Username = d.Get("ad_config.0.username").(string)
+		adConfig.Password = d.Get("ad_config.0.password").(string)
+		adConfig.UserGroup = d.Get("ad_config.0.user_group").(string)
+		if ou, ok := d.GetOk("ad_config.0.ou"); ok {
+			adConfig.Ou = ou.(string)
+		}
+		profile.AdConfig = &adConfig
+	}
+
+	if profile.AdConfig != nil {
+		d.Set("ad_config.0.domain", profile.AdConfig.Domain)
+		d.Set("ad_config.0.username", profile.AdConfig.Domain)
+		//d.Set("ad_config.0.password", profile.AdConfig.password)
+		d.Set("ad_config.0.user_group", profile.AdConfig.UserGroup)
+		d.Set("ad_config.0.ou", profile.AdConfig.Ou)
+	}
+
+	if profile.UserVolumes != nil {
+		d.Set("user_volumes.0.repository", profile.UserVolumes.Repository)
+		d.Set("user_volumes.0.size", profile.UserVolumes.Size)
+		d.Set("user_volumes.0.backup_schedule", profile.UserVolumes.BackupSchedule)
+		d.Set("user_volumes.0.target", profile.UserVolumes.Target)
+	}
 	return nil
 }
 
@@ -139,9 +226,7 @@ func resourceProfileExists(d *schema.ResourceData, m interface{}) (bool, error) 
 
 func resourceProfileUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-	var profile rest.Profile
-	profile.Name = d.Get("name").(string)
-	profile.Timezone = d.Get("timezone").(string)
+	profile := profileFromResource(d)
 	_, err := profile.Update(client)
 	if err != nil {
 		return err

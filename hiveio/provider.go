@@ -8,16 +8,6 @@ import (
 	"github.com/hive-io/hive-go-client/rest"
 )
 
-/*type providerConfiguration struct {
-	Client   *rest.Client
-	Host     string
-	Port     uint
-	Username string
-	Password string
-	Realm    string
-	Insecure bool
-}*/
-
 func Provider() *schema.Provider {
 	return &schema.Provider{
 
@@ -62,22 +52,11 @@ func Provider() *schema.Provider {
 				Description: "Ignore SSL certificate errors",
 			},
 		},
-		DataSourcesMap: map[string]*schema.Resource{
-			// "nutanix_image":           dataSourceNutanixImage(),
-			// "nutanix_subnet":          dataSourceNutanixSubnet(),
-			// "nutanix_cluster":         dataSourceNutanixCluster(),
-			// "nutanix_clusters":        dataSourceNutanixClusters(),
-			// "nutanix_virtual_machine": dataSourceNutanixVirtualMachine(),
-			// "nutanix_category_key":    dataSourceNutanixCategoryKey(),
-			// "nutanix_network_security_rule": dataSourceNutanixNetworkSecurityRule(),
-			// "nutanix_volume_group":           dataSourceNutanixVolumeGroup(),
-			// "nutanix_volume_groups":          dataSourceNutanixVolumeGroups(),
-		},
+		DataSourcesMap: map[string]*schema.Resource{},
 		ResourcesMap: map[string]*schema.Resource{
-			"hiveio_profile": resourceProfile(),
-			// TODO - storage_iso
-			// TODO - bridge
-			// TODO - vm_qemu_template
+			"hiveio_realm":        resourceRealm(),
+			"hiveio_profile":      resourceProfile(),
+			"hiveio_storage_pool": resourceStoragePool(),
 		},
 
 		ConfigureFunc: providerConfigure,
