@@ -1,6 +1,8 @@
 package hiveio
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -82,10 +84,12 @@ func resourceRealmRead(d *schema.ResourceData, m interface{}) error {
 func resourceRealmExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*rest.Client)
 	id := d.Id()
-	realm, err := client.GetRealm(id)
-	if err != nil || realm.Name != d.Get("name").(string) {
-		return false, err
+	_, err := client.GetRealm(id)
+
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		return false, nil
 	}
+
 	return true, nil
 }
 

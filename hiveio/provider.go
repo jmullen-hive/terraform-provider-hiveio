@@ -57,6 +57,7 @@ func Provider() *schema.Provider {
 			"hiveio_realm":        resourceRealm(),
 			"hiveio_profile":      resourceProfile(),
 			"hiveio_storage_pool": resourceStoragePool(),
+			"hiveio_disk":         resourceDisk(),
 		},
 
 		ConfigureFunc: providerConfigure,

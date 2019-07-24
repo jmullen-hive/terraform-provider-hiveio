@@ -1,6 +1,8 @@
 package hiveio
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -194,7 +196,7 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	if profile.AdConfig != nil {
 		d.Set("ad_config.0.domain", profile.AdConfig.Domain)
 		d.Set("ad_config.0.username", profile.AdConfig.Domain)
-		//d.Set("ad_config.0.password", profile.AdConfig.password)
+		d.Set("ad_config.0.password", profile.AdConfig.Password)
 		d.Set("ad_config.0.user_group", profile.AdConfig.UserGroup)
 		d.Set("ad_config.0.ou", profile.AdConfig.Ou)
 	}
@@ -210,16 +212,15 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceProfileExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*rest.Client)
-	var profile *rest.Profile
 	var err error
 	id := d.Id()
 	if id != "" {
-		profile, err = client.GetProfile(id)
+		_, err = client.GetProfile(id)
 	} else {
-		profile, err = client.GetProfileByName(d.Get("name").(string))
+		_, err = client.GetProfileByName(d.Get("name").(string))
 	}
-	if err != nil || profile.Name != d.Get("name").(string) {
-		return false, err
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		return false, nil
 	}
 	return true, nil
 }
