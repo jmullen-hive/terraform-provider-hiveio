@@ -51,7 +51,7 @@ func resourceProfile() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"timezone": &schema.Schema{
 				Type:     schema.TypeString,
