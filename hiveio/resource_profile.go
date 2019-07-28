@@ -221,6 +221,8 @@ func resourceProfileExists(d *schema.ResourceData, m interface{}) (bool, error) 
 	}
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	return true, nil
 }

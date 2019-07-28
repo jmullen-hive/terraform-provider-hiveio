@@ -1,6 +1,8 @@
 package hiveio
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -144,14 +146,15 @@ func resourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceStoragePoolExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*rest.Client)
-	var storage *rest.StoragePool
 	var err error
 	if d.Id() != "" {
-		storage, err = client.GetStoragePool(d.Id())
+		_, err = client.GetStoragePool(d.Id())
 	} else {
-		storage, err = client.GetStoragePoolByName(d.Get("name").(string))
+		_, err = client.GetStoragePoolByName(d.Get("name").(string))
 	}
-	if err != nil || storage.Name != d.Get("name").(string) {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
 	return true, nil

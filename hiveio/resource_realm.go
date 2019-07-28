@@ -7,14 +7,6 @@ import (
 	"github.com/hive-io/hive-go-client/rest"
 )
 
-// type Realm struct {
-// 	Enabled  bool     `json:"enabled"`
-// 	FQDN     string   `json:"fqdn"`
-// 	Name     string   `json:"name"`
-// 	Tags     []string `json:"tags,omitempty"`
-// 	Verified bool     `json:"verified"`
-// }
-
 func resourceRealm() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceRealmCreate,
@@ -88,8 +80,9 @@ func resourceRealmExists(d *schema.ResourceData, m interface{}) (bool, error) {
 
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		return false, nil
+	} else if err != nil {
+		return false, err
 	}
-
 	return true, nil
 }
 

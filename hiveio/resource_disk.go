@@ -2,6 +2,7 @@ package hiveio
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -80,9 +81,11 @@ func resourceDiskExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*rest.Client)
 	id := d.Get("storage_pool").(string)
 	storage, err := client.GetStoragePool(id)
-	if err != nil {
-		return false, err
-	}
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+                return false, nil
+        } else if err != nil {
+                return false, err
+        }
 	files, err := storage.Browse(client)
 	if err != nil {
 		return false, err

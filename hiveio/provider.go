@@ -54,11 +54,13 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{},
 		ResourcesMap: map[string]*schema.Resource{
-			"hiveio_realm":        resourceRealm(),
-			"hiveio_profile":      resourceProfile(),
-			"hiveio_storage_pool": resourceStoragePool(),
-			"hiveio_disk":         resourceDisk(),
-			"hiveio_template":     resourceTemplate(),
+			"hiveio_realm":           resourceRealm(),
+			"hiveio_profile":         resourceProfile(),
+			"hiveio_storage_pool":    resourceStoragePool(),
+			"hiveio_disk":            resourceDisk(),
+			"hiveio_template":        resourceTemplate(),
+			"hiveio_guest_pool":      resourceGuestPool(),
+			"hiveio_virtual_machine": resourceVM(),
 		},
 
 		ConfigureFunc: providerConfigure,

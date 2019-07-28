@@ -3,6 +3,7 @@ package hiveio
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -201,11 +202,8 @@ func resourceTemplateCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	template, err = client.GetTemplate(template.Name)
-	if err != nil {
-		return err
-	}
 	d.SetId(template.Name)
+	time.Sleep(2 * time.Second)
 	return resourceTemplateRead(d, m)
 }
 
@@ -250,8 +248,10 @@ func resourceTemplateExists(d *schema.ResourceData, m interface{}) (bool, error)
 	_, err = client.GetTemplate(name)
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		return false, nil
+	} else if err != nil {
+		return false, err
 	}
-	return true, err
+	return true, nil
 }
 
 func resourceTemplateUpdate(d *schema.ResourceData, m interface{}) error {
