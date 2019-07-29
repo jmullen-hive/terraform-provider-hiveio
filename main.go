@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitbucket.org/johnmullen/terraform-provider-hiveio/hiveio"
+	"github.com/hive-io/terraform-provider-hiveio/hiveio"
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"
 )
