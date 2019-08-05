@@ -19,6 +19,7 @@ func resourceGuestPool() *schema.Resource {
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"density": {
 				Type:     schema.TypeList,
@@ -46,6 +47,7 @@ func resourceGuestPool() *schema.Resource {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
+				ForceNew: true,
 			},
 			"template": &schema.Schema{
 				Type:     schema.TypeString,
@@ -58,6 +60,7 @@ func resourceGuestPool() *schema.Resource {
 			"seed": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"state": &schema.Schema{
 				Type:     schema.TypeString,
@@ -67,11 +70,13 @@ func resourceGuestPool() *schema.Resource {
 				Type:     schema.TypeString,
 				Default:  "disk",
 				Optional: true,
+				ForceNew: true,
 			},
 			"storage_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Default:  "disk",
 				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}

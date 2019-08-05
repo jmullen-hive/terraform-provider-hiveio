@@ -1,8 +1,11 @@
 package hiveio
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -82,6 +85,9 @@ func resourceStoragePool() *schema.Resource {
 				},
 				ForceNew: true, //TODO: add update that only changes this field
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Delete: schema.DefaultTimeout(3 * time.Minute),
 		},
 	}
 }
@@ -166,5 +172,13 @@ func resourceStoragePoolDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	return storage.Delete(client)
+	//{"error": 423, "message": {"code":"LockedError","message":"Storage pool vms is in use and can not be deleted"}}
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err = storage.Delete(client)
+		if err != nil && strings.Contains(err.Error(), "\"error\": 423") {
+			time.Sleep(2 * time.Second)
+			return resource.RetryableError(fmt.Errorf("Storage Pool %s is in use", d.Id()))
+		}
+		return resource.NonRetryableError(err)
+	})
 }
