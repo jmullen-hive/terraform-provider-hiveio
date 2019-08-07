@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -148,6 +149,9 @@ func resourceTemplate() *schema.Resource {
 				},
 			},
 		},
+		Timeouts: &schema.ResourceTimeout{
+                        Read: schema.DefaultTimeout(time.Minute),
+                },
 	}
 }
 
@@ -203,13 +207,22 @@ func resourceTemplateCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	d.SetId(template.Name)
-	time.Sleep(2 * time.Second)
 	return resourceTemplateRead(d, m)
 }
 
 func resourceTemplateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-	template, err := client.GetTemplate(d.Id())
+	var template rest.Template
+	var err error
+	return resource.Retry(d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+                template, err = client.GetTemplate(d.Id())
+                if err != nil && strings.Contains(err.Error(), "\"allowedValues\":[\"failed\"") {
+                        time.Sleep(1 * time.Second)
+			//something changed state to undefined
+                        return resource.RetryableError(fmt.Errorf("Validation Error", d.Id()))
+                }
+                return resource.NonRetryableError(err)
+        })
 	if err != nil {
 		return err
 	}
