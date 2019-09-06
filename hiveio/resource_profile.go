@@ -7,39 +7,6 @@ import (
 	"github.com/hive-io/hive-go-client/rest"
 )
 
-// type Profile struct {
-// 	AdConfig *struct {
-// 		Domain    string      `json:"domain,omitempty"`
-// 		Ou        interface{} `json:"ou,omitempty"`
-// 		Password  string      `json:"password,omitempty"`
-// 		UserGroup string      `json:"userGroup,omitempty"`
-// 		Username  string      `json:"username,omitempty"`
-// 	} `json:"adConfig,omitempty"`
-// 	BrokerOptions *struct {
-// 		AllowDesktopComposition bool `json:"allowDesktopComposition,omitempty"`
-// 		AudioCapture            bool `json:"audioCapture,omitempty"`
-// 		RedirectCSSP            bool `json:"redirectCSSP,omitempty"`
-// 		RedirectClipboard       bool `json:"redirectClipboard,omitempty"`
-// 		RedirectDisk            bool `json:"redirectDisk,omitempty"`
-// 		RedirectPNP             bool `json:"redirectPNP,omitempty"`
-// 		RedirectPrinter         bool `json:"redirectPrinter,omitempty"`
-// 		RedirectUSB             bool `json:"redirectUSB,omitempty"`
-// 		SmartResize             bool `json:"smartResize,omitempty"`
-// 	} `json:"brokerOptions,omitempty"`
-// 	BypassBroker bool     `json:"bypassBroker,omitempty"`
-// 	ID           string   `json:"id,omitempty"`
-// 	Name         string   `json:"name"`
-// 	Tags         []string `json:"tags,omitempty"`
-// 	Timezone     string   `json:"timezone,omitempty"`
-// 	UserVolumes  *struct {
-// 		BackupSchedule int    `json:"backupSchedule,omitempty"`
-// 		Repository     string `json:"repository,omitempty"`
-// 		Size           int    `json:"size,omitempty"`
-// 		Target         string `json:"target,omitempty"`
-// 	} `json:"userVolumes,omitempty"`
-// 	Vlan int `json:"vlan,omitempty"`
-// }
-
 func resourceProfile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceProfileCreate,
@@ -47,6 +14,9 @@ func resourceProfile() *schema.Resource {
 		Exists: resourceProfileExists,
 		Update: resourceProfileUpdate,
 		Delete: resourceProfileDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{

@@ -10,26 +10,15 @@ import (
 	"github.com/hive-io/hive-go-client/rest"
 )
 
-/*type StoragePool struct {
-	ID           string   `json:"id,omitempty"`
-	Name         string   `json:"name"`
-	Type         string   `json:"type"`
-	Server       string   `json:"server"`
-	Path         string   `json:"path"`
-	Username     string   `json:"username,omitempty"`
-	Password     string   `json:"password,omitempty"`
-	Key          string   `json:"key,omitempty"`
-	MountOptions []string `json:"mountOptions,omitempty"`
-	Roles        []string `json:"roles,omitempty"`
-	Tags         []string `json:"tags,omitempty"`
-}*/
-
 func resourceStoragePool() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceStoragePoolCreate,
 		Read:   resourceStoragePoolRead,
 		Exists: resourceStoragePoolExists,
 		Delete: resourceStoragePoolDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{

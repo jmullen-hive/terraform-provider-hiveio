@@ -52,7 +52,9 @@ func Provider() *schema.Provider {
 				Description: "Ignore SSL certificate errors",
 			},
 		},
-		DataSourcesMap: map[string]*schema.Resource{},
+		DataSourcesMap: map[string]*schema.Resource{
+			"hiveio_profile": dataSourceProfile(),
+		},
 		ResourcesMap: map[string]*schema.Resource{
 			"hiveio_realm":           resourceRealm(),
 			"hiveio_profile":         resourceProfile(),

@@ -14,6 +14,9 @@ func resourceRealm() *schema.Resource {
 		Exists: resourceRealmExists,
 		Update: resourceRealmUpdate,
 		Delete: resourceRealmDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"fqdn": &schema.Schema{

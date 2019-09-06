@@ -6,41 +6,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hive-io/hive-go-client/rest"
 )
-
-// type TemplateInterface struct {
-// 	Network   string `json:"network"`
-// 	Vlan      int    `json:"vlan"`
-// 	Emulation string `json:"emulation"`
-// }
-
-// type TemplateDisk struct {
-// 	DiskDriver string `json:"diskDriver"`
-// 	Filename   string `json:"filename"`
-// 	Format     string `json:"format,omitempty"`
-// 	Path       string `json:"path,omitempty"`
-// 	Size       int    `json:"size"`
-// 	StorageID  string `json:"storageId"`
-// 	Type       string `json:"type"`
-// }
-
-// type Template struct {
-// 	ID                 string              `json:"id,omitempty"`
-// 	Name               string              `json:"name"`
-// 	Vcpu               int                 `json:"vcpu"`
-// 	Mem                int                 `json:"mem"`
-// 	OS                 string              `json:"os"`
-// 	Firmware           string              `json:"firmware,omitempty"`
-// 	DisplayDriver      string              `json:"displayDriver,omitempty"`
-// 	Interfaces         []*TemplateInterface `json:"interfaces,omitempty"`
-// 	Drivers            bool                `json:"drivers"`
-// 	Disks              []*TemplateDisk      `json:"disks,omitempty"`
-// 	State              string              `json:"state,omitempty"`
-// 	StateMessage       string              `json:"stateMessage,omitempty"`
-// 	ManualAgentInstall bool                `json:"manualAgentInstall"`
-// }
 
 func resourceTemplate() *schema.Resource {
 	return &schema.Resource{
@@ -49,6 +16,9 @@ func resourceTemplate() *schema.Resource {
 		Exists: resourceTemplateExists,
 		Update: resourceTemplateUpdate,
 		Delete: resourceTemplateDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -150,8 +120,8 @@ func resourceTemplate() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-                        Read: schema.DefaultTimeout(time.Minute),
-                },
+			Read: schema.DefaultTimeout(time.Minute),
+		},
 	}
 }
 
@@ -212,17 +182,7 @@ func resourceTemplateCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceTemplateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-	var template rest.Template
-	var err error
-	return resource.Retry(d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-                template, err = client.GetTemplate(d.Id())
-                if err != nil && strings.Contains(err.Error(), "\"allowedValues\":[\"failed\"") {
-                        time.Sleep(1 * time.Second)
-			//something changed state to undefined
-                        return resource.RetryableError(fmt.Errorf("Validation Error", d.Id()))
-                }
-                return resource.NonRetryableError(err)
-        })
+	template, err := client.GetTemplate(d.Id())
 	if err != nil {
 		return err
 	}

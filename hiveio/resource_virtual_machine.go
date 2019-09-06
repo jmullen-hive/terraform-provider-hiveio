@@ -3,7 +3,9 @@ package hiveio
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -15,6 +17,12 @@ func resourceVM() *schema.Resource {
 		Exists: resourceVMExists,
 		Update: resourceVMUpdate,
 		Delete: resourceVMDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Delete: schema.DefaultTimeout(5 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -249,5 +257,17 @@ func resourceVMDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	return pool.Delete(client)
+	err = pool.Delete(client)
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		pool, err := client.GetPool(d.Id())
+		if err == nil && pool.State == "deleting" {
+			time.Sleep(5 * time.Second)
+			return resource.RetryableError(fmt.Errorf("Deleting pool %s", d.Id()))
+		}
+		if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+			time.Sleep(5 * time.Second)
+			return resource.NonRetryableError(nil)
+		}
+		return resource.NonRetryableError(err)
+	})
 }
