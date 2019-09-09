@@ -137,7 +137,7 @@ func templateFromResource(d *schema.ResourceData) rest.Template {
 	}
 
 	if d.Id() != "" {
-		template.ID = d.Id()
+		template.Name = d.Id()
 	}
 
 	var disks []*rest.TemplateDisk
