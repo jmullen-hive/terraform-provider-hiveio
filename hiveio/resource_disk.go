@@ -40,6 +40,16 @@ func resourceDisk() *schema.Resource {
 				Default:  "qcow2",
 				ForceNew: true,
 			},
+			"src_storage": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"src_filename": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -47,14 +57,27 @@ func resourceDisk() *schema.Resource {
 func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	id := d.Get("storage_pool").(string)
-	storage, err := client.GetStoragePool(id)
-	if err != nil {
-		return err
-	}
 	filename := d.Get("filename").(string)
 	format := d.Get("format").(string)
 	size := uint(d.Get("size").(int))
-	err = storage.CreateDisk(client, filename, format, size)
+
+	srcPool, srcPoolOk := d.GetOk("src_storage")
+	srcFilename, srcFileOk := d.GetOk("src_filename")
+
+	var err error
+	if srcPoolOk && srcFileOk {
+		storage, err := client.GetStoragePool(srcPool.(string))
+		if err != nil {
+			return err
+		}
+		err = storage.ConvertDisk(client, srcFilename.(string), id, filename, format)
+	} else {
+		storage, err := client.GetStoragePool(id)
+		if err != nil {
+			return err
+		}
+		err = storage.CreateDisk(client, filename, format, size)
+	}
 	if err == nil {
 		d.SetId(id + "-" + filename)
 	}
