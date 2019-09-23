@@ -1,9 +1,12 @@
 package hiveio
 
 import (
+	"fmt"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -17,7 +20,9 @@ func resourceDisk() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(20 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"filename": &schema.Schema{
 				Type:     schema.TypeString,
@@ -65,27 +70,48 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	srcFilename, srcFileOk := d.GetOk("src_filename")
 
 	var err error
+	var task *rest.Task
 	if srcPoolOk && srcFileOk {
 		storage, err := client.GetStoragePool(srcPool.(string))
 		if err != nil {
 			return err
 		}
-		err = storage.ConvertDisk(client, srcFilename.(string), id, filename, format)
+		task, err = storage.ConvertDisk(client, srcFilename.(string), id, filename, format)
 	} else {
 		storage, err := client.GetStoragePool(id)
 		if err != nil {
 			return err
 		}
-		err = storage.CreateDisk(client, filename, format, size)
+		task, err = storage.CreateDisk(client, filename, format, size)
 	}
-	if err == nil {
+	if err != nil {
+		return err
+	}
+
+	if task.State == "completed" {
 		d.SetId(id + "-" + filename)
+		return nil
 	}
-	return nil
+
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		task, err = client.GetTask(task.ID)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if task.State == "completed" {
+			d.SetId(id + "-" + filename)
+			return resource.NonRetryableError(nil)
+		}
+		if task.State == "failed" {
+			return resource.NonRetryableError(fmt.Errorf("Failed to create disk %s", filename))
+		}
+		time.Sleep(5 * time.Second)
+		return resource.RetryableError(fmt.Errorf("Creating disk %s", filename))
+	})
 }
 
 func resourceDiskRead(d *schema.ResourceData, m interface{}) error {
-	//TODO: Add virsh vol-info to hive-rest
+	//TODO: Add qemu-img info to hive-rest
 	return nil
 }
 
