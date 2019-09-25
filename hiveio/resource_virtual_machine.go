@@ -21,7 +21,8 @@ func resourceVM() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Delete: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -192,8 +193,31 @@ func resourceVMCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	guestName := strings.ToUpper(pool.Name)
+	guestName = strings.ReplaceAll(guestName, " ", "_")
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		guest, err := client.GetGuest(guestName)
+		if err != nil {
+			if strings.Contains(err.Error(), "\"error\": 404") {
+				time.Sleep(5 * time.Second)
+				return resource.RetryableError(fmt.Errorf("Building pool %s", pool.ID))
+			}
+			return resource.NonRetryableError((err))
+		}
+		for _, v := range guest.TargetState {
+			if v == guest.GuestState {
+				return resource.NonRetryableError(nil)
+			}
+		}
+		time.Sleep(5 * time.Second)
+		return resource.RetryableError(fmt.Errorf("Building pool %s", pool.ID))
+	})
+	if err != nil {
+		return err
+	}
 	d.SetId(pool.ID)
-	return resourceGuestPoolRead(d, m)
+	return resourceVMRead(d, m)
 }
 
 func resourceVMRead(d *schema.ResourceData, m interface{}) error {
@@ -211,6 +235,7 @@ func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("state", pool.State)
 	d.Set("os", pool.GuestProfile.OS)
 	d.Set("firmware", pool.GuestProfile.Firmware)
+	d.Set("display_driver", pool.GuestProfile.Vga)
 
 	for i, disk := range pool.GuestProfile.Disks {
 		prefix := fmt.Sprintf("disk.%d.", i)
@@ -248,7 +273,7 @@ func resourceVMUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	return resourceGuestPoolRead(d, m)
+	return resourceVMRead(d, m)
 }
 
 func resourceVMDelete(d *schema.ResourceData, m interface{}) error {

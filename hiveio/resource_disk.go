@@ -93,7 +93,7 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		task, err = client.GetTask(task.ID)
 		if err != nil {
 			return resource.NonRetryableError(err)
