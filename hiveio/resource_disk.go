@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -100,26 +99,13 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	task = task.WaitForTask(client, false)
 	if task.State == "completed" {
 		d.SetId(id + "-" + filename)
-		return nil
+	} else if task.State == "failed" {
+		return fmt.Errorf("Failed to Create disk: %s", task.Message)
 	}
-
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		task, err = client.GetTask(task.ID)
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-		if task.State == "completed" {
-			d.SetId(id + "-" + filename)
-			return resource.NonRetryableError(nil)
-		}
-		if task.State == "failed" {
-			return resource.NonRetryableError(fmt.Errorf("Failed to create disk %s", filename))
-		}
-		time.Sleep(5 * time.Second)
-		return resource.RetryableError(fmt.Errorf("Creating disk %s", filename))
-	})
+	return nil
 }
 
 func resourceDiskRead(d *schema.ResourceData, m interface{}) error {
