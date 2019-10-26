@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -53,7 +53,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"hiveio_profile": dataSourceProfile(),
+			"hiveio_profile":      dataSourceProfile(),
 			"hiveio_storage_pool": dataSourceStoragePool(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
