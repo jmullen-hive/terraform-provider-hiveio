@@ -31,9 +31,14 @@ func resourceStoragePool() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"url": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 			"server": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"path": &schema.Schema{

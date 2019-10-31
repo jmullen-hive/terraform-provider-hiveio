@@ -55,6 +55,11 @@ func resourceDisk() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"src_url": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -68,6 +73,7 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 
 	srcPool, srcPoolOk := d.GetOk("src_storage")
 	srcFilename, srcFileOk := d.GetOk("src_filename")
+	srcURL, srcURLOk := d.GetOk("src_url")
 
 	var err error
 	var task *rest.Task
@@ -77,6 +83,12 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 		task, err = storage.ConvertDisk(client, srcFilename.(string), id, filename, format)
+	} else if srcURLOk {
+		storage, err := client.GetStoragePool(id)
+		if err != nil {
+			return err
+		}
+		task, err = storage.CopyUrl(client, srcURL.(string), filename)
 	} else {
 		storage, err := client.GetStoragePool(id)
 		if err != nil {
