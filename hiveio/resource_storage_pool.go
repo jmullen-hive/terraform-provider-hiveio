@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -79,6 +79,22 @@ func resourceStoragePool() *schema.Resource {
 				},
 				ForceNew: true, //TODO: add update that only changes this field
 			},
+			"s3_access_key_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"s3_secret_access_key": {
+				Type:      schema.TypeString,
+				Optional:  true,
+				ForceNew:  true,
+				Sensitive: true,
+			},
+			"s3_region": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(3 * time.Minute),
@@ -112,6 +128,16 @@ func resourceStoragePoolCreate(d *schema.ResourceData, m interface{}) error {
 		storage.Key = key.(string)
 	}
 
+	if s3AccessKeyId, ok := d.GetOk("s3_access_key_id"); ok {
+		storage.S3AccessKeyID = s3AccessKeyId.(string)
+	}
+	if s3SecretAccessKey, ok := d.GetOk("s3_secret_access_key"); ok {
+		storage.S3SecretAccessKey = s3SecretAccessKey.(string)
+	}
+	if s3Region, ok := d.GetOk("s3_region"); ok {
+		storage.S3Region = s3Region.(string)
+	}
+
 	_, err := storage.Create(client)
 	if err != nil {
 		return err
@@ -138,9 +164,11 @@ func resourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("path", storage.Path)
 	d.Set("type", storage.Type)
 	d.Set("username", storage.Username)
-	d.Set("password", storage.Password)
-	d.Set("key", storage.Key)
+	//d.Set("password", storage.Password)
+	//d.Set("key", storage.Key)
 	d.Set("roles", storage.Roles)
+	d.Set("s3_acess_key_id", storage.S3AccessKeyID)
+	d.Set("s3_region", storage.S3Region)
 	return nil
 }
 
