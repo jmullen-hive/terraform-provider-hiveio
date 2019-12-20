@@ -122,6 +122,21 @@ func resourceVM() *schema.Resource {
 					},
 				},
 			},
+			"cloudinit_enabled": &schema.Schema{
+				Type:     schema.TypeBool,
+				Default:  false,
+				Optional: true,
+			},
+			"cloudinit_userdata": &schema.Schema{
+				Type:     schema.TypeString,
+				Default:  "",
+				Optional: true,
+			},
+			"cloudinit_networkconfig": &schema.Schema{
+				Type:     schema.TypeString,
+				Default:  "",
+				Optional: true,
+			},
 		},
 	}
 }
@@ -146,6 +161,14 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 	}
 	if mem, ok := d.GetOk("memory"); ok {
 		guestProfile.Mem = []int{mem.(int), mem.(int)}
+	}
+	if cloudInitEnabled := d.Get("cloudinit_enabled").(bool); cloudInitEnabled {
+		cloudInit := rest.PoolCloudInit{
+			Enabled:       cloudInitEnabled,
+			UserData:      d.Get("cloudinit_userdata").(string),
+			NetworkConfig: d.Get("cloudinit_networkconfig").(string),
+		}
+		guestProfile.CloudInit = &cloudInit
 	}
 	pool.GuestProfile = &guestProfile
 
@@ -250,6 +273,12 @@ func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 		d.Set(prefix+"emulation", iface.Emulation)
 		d.Set(prefix+"network", iface.Network)
 		d.Set(prefix+"vlan", iface.Vlan)
+	}
+
+	if pool.GuestProfile.CloudInit != nil {
+		d.Set("cloudinit_enabled", pool.GuestProfile.CloudInit.Enabled)
+		d.Set("cloudinit_userdata", pool.GuestProfile.CloudInit.UserData)
+		d.Set("cloudinit_networkconfig", pool.GuestProfile.CloudInit.NetworkConfig)
 	}
 
 	return nil
