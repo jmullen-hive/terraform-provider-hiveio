@@ -128,6 +128,10 @@ func resourceVM() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Required: true,
+						},
 						"frequency": {
 							Type:     schema.TypeString,
 							Required: true,
@@ -220,6 +224,7 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 
 	if _, ok := d.GetOk("backup"); ok {
 		var backup rest.PoolBackup
+		backup.Enabled = d.Get("backup.0.enabled").(bool)
 		backup.Frequency = d.Get("backup.0.frequency").(string)
 		backup.TargetStorageID = d.Get("backup.0.target").(string)
 		pool.Backup = &backup
@@ -303,6 +308,12 @@ func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("cloudinit_enabled", pool.GuestProfile.CloudInit.Enabled)
 		d.Set("cloudinit_userdata", pool.GuestProfile.CloudInit.UserData)
 		d.Set("cloudinit_networkconfig", pool.GuestProfile.CloudInit.NetworkConfig)
+	}
+
+	if pool.Backup != nil {
+		d.Set("backup.0.enabled", pool.Backup.Enabled)
+		d.Set("backup.0.frequency", pool.Backup.Frequency)
+		d.Set("backup.0.target", pool.Backup.TargetStorageID)
 	}
 
 	return nil

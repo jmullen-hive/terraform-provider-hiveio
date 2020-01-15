@@ -89,6 +89,10 @@ func resourceProfile() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Required: true,
+						},
 						"frequency": {
 							Type:     schema.TypeString,
 							Required: true,
@@ -141,6 +145,7 @@ func profileFromResource(d *schema.ResourceData) *rest.Profile {
 
 	if _, ok := d.GetOk("backup"); ok {
 		var backup rest.ProfileBackup
+		backup.Enabled = d.Get("backup.0.enabled").(bool)
 		backup.Frequency = d.Get("backup.0.frequency").(string)
 		backup.TargetStorageID = d.Get("backup.0.target").(string)
 		profile.Backup = &backup
@@ -191,6 +196,7 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if profile.Backup != nil {
+		d.Set("backup.0.enabled", profile.Backup.Enabled)
 		d.Set("backup.0.frequency", profile.Backup.Frequency)
 		d.Set("backup.0.target", profile.Backup.TargetStorageID)
 	}
