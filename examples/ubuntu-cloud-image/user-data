@@ -1,0 +1,25 @@
+#cloud-config
+users:
+  - name: root
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC++fpW1y42w3NuJLXIOviIJXPhCa/RZoEEgbe1GCDU4pwyXvMeDyeEmaFkDWTBdHleyZu435mXK5dr4B5uASY4P28ynwTk4LR+7fiXEwepj5VbOkHEu4/nWr2KM8iZKgb1gET2OGQpLclc/d/ckhJrXfEWg+yybXPZc/XYUGLh9KuJcvTi5aEIN4rTvDaLrzfKpDGkHJCSLMQE6HKWdA1tINGpakWf1nJ46VPPijxGiM1BnbnoOENmTtSpCW2FZ28PYsraCR8e5/jI+qlTp1nSHYsamprF1ZcJfYo9xcJpHZhv577YogjsDmR6xe0s4TfNW+B5X2YAxIq7hbCnFkwD
+  - name: user
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC++fpW1y42w3NuJLXIOviIJXPhCa/RZoEEgbe1GCDU4pwyXvMeDyeEmaFkDWTBdHleyZu435mXK5dr4B5uASY4P28ynwTk4LR+7fiXEwepj5VbOkHEu4/nWr2KM8iZKgb1gET2OGQpLclc/d/ckhJrXfEWg+yybXPZc/XYUGLh9KuJcvTi5aEIN4rTvDaLrzfKpDGkHJCSLMQE6HKWdA1tINGpakWf1nJ46VPPijxGiM1BnbnoOENmTtSpCW2FZ28PYsraCR8e5/jI+qlTp1nSHYsamprF1ZcJfYo9xcJpHZhv577YogjsDmR6xe0s4TfNW+B5X2YAxIq7hbCnFkwD
+runcmd:
+  - touch /testfile
+chpasswd:
+  list:
+    - root:password
+    - user:test
+  expire: no
+packages:
+  - build-essential
+  - debhelper
+  - zfsutils-linux
+  - qemu-utils
+  - jq
