@@ -75,14 +75,17 @@ func resourceVM() *schema.Resource {
 							Type:     schema.TypeString,
 							Default:  "Disk",
 							Optional: true,
+							ForceNew: true,
 						},
 						"storage_id": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"filename": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"disk_driver": {
 							Type:     schema.TypeString,
@@ -93,6 +96,7 @@ func resourceVM() *schema.Resource {
 							Type:     schema.TypeString,
 							Default:  "qcow2",
 							Optional: true,
+							ForceNew: true,
 						},
 						"size": {
 							Type:     schema.TypeString,
