@@ -65,6 +65,7 @@ func Provider() *schema.Provider {
 			"hiveio_template":        resourceTemplate(),
 			"hiveio_guest_pool":      resourceGuestPool(),
 			"hiveio_virtual_machine": resourceVM(),
+			"hiveio_license":         resourceLicense(),
 		},
 
 		ConfigureFunc: providerConfigure,
