@@ -27,7 +27,7 @@ func resourceLicense() *schema.Resource {
 
 func resourceLicenseCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-	clusterID, err := client.ClusterId()
+	clusterID, err := client.ClusterID()
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func resourceLicenseRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceLicenseExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*rest.Client)
-	clusterID, err := client.ClusterId()
+	clusterID, err := client.ClusterID()
 	if err != nil {
 		return false, err
 	}

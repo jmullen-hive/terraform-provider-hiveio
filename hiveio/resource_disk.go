@@ -86,7 +86,7 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		task, err = storage.CopyUrl(client, srcURL.(string), filename)
+		task, err = storage.CopyURL(client, srcURL.(string), filename)
 	} else {
 		storage, err := client.GetStoragePool(id)
 		if err != nil {

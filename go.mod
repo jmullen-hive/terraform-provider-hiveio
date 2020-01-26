@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.4.1
 	github.com/hashicorp/terraform-svchost v0.0.0-20191119180714-d2e4933b9136 // indirect
 	github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d // indirect
-	github.com/hive-io/hive-go-client v0.0.0-20200120193800-c015f555a787
+	github.com/hive-io/hive-go-client v0.0.0-20200126023831-d8ee04aab860
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
