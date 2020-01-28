@@ -44,6 +44,11 @@ func resourceHost() *schema.Resource {
 				Required:    true,
 				Sensitive:   true,
 			},
+			"gateway_only": &schema.Schema{
+				Type:     schema.TypeBool,
+				Default:  false,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -64,19 +69,32 @@ func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+	state := "available"
+	if d.Get("gateway_only").(bool) {
+		state = "broker"
+	}
+	task, err = host.SetState(client, state)
+	if err != nil {
+		return err
+	}
+	task = task.WaitForTask(client, false)
+	if task.State == "failed" {
+		return fmt.Errorf("Failed to Create disk: %s", task.Message)
+	}
 	d.SetId(host.Hostid)
 	return resourceHostRead(d, m)
 }
 
 func resourceHostRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-	var Host rest.Host
+	var host rest.Host
 	var err error
-	Host, err = client.GetHost(d.Id())
+	host, err = client.GetHost(d.Id())
 	if err != nil {
 		return err
 	}
-	d.Set("hostname", Host.Hostname)
+	d.Set("gateway_only", host.State == "gateway")
+	d.Set("hostname", host.Hostname)
 	return nil
 }
 
@@ -106,6 +124,16 @@ func resourceHostUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceHostDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	host, err := client.GetHost(d.Id())
+	if host.State != "maintenance" {
+		task, err := host.SetState(client, "maintenance")
+		if err != nil {
+			return err
+		}
+		task = task.WaitForTask(client, false)
+		if task.State == "failed" {
+			return fmt.Errorf("Failed to Create disk: %s", task.Message)
+		}
+	}
 	if err != nil {
 		return err
 	}
