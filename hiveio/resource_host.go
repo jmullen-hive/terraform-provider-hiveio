@@ -79,7 +79,7 @@ func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	task = task.WaitForTask(client, false)
 	if task.State == "failed" {
-		return fmt.Errorf("Failed to Create disk: %s", task.Message)
+		return fmt.Errorf("Failed to set host state: %s", task.Message)
 	}
 	d.SetId(host.Hostid)
 	return resourceHostRead(d, m)
@@ -131,7 +131,7 @@ func resourceHostDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		task = task.WaitForTask(client, false)
 		if task.State == "failed" {
-			return fmt.Errorf("Failed to Create disk: %s", task.Message)
+			return fmt.Errorf("Failed to enter maintenance mode: %s", task.Message)
 		}
 	}
 	if err != nil {
