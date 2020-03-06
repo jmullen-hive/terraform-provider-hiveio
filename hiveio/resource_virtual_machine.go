@@ -283,8 +283,7 @@ func resourceVMCreate(d *schema.ResourceData, m interface{}) error {
 				return resource.NonRetryableError(nil)
 			}
 		}
-		time.Sleep(5 * time.Second)
-		return resource.RetryableError(fmt.Errorf("Building pool %s", pool.ID))
+		return resource.NonRetryableError(guest.WaitForGuest(client, d.Timeout(schema.TimeoutCreate)))
 	})
 	if err != nil {
 		return err

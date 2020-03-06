@@ -125,6 +125,11 @@ func resourceGuestPool() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"wait_for_build": &schema.Schema{
+				Type:     schema.TypeBool,
+				Default:  false,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -211,6 +216,9 @@ func resourceGuestPoolCreate(d *schema.ResourceData, m interface{}) error {
 	pool, err = client.GetPoolByName(pool.Name)
 	if err != nil {
 		return err
+	}
+	if d.Get("wait_for_build").(bool) {
+		pool.WaitForPool(client, "tracking", 60*time.Minute)
 	}
 	d.SetId(pool.ID)
 	return resourceGuestPoolRead(d, m)
