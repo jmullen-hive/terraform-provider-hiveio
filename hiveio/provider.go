@@ -8,6 +8,7 @@ import (
 	"github.com/hive-io/hive-go-client/rest"
 )
 
+//Provider hiveio terraform provider
 func Provider() *schema.Provider {
 	return &schema.Provider{
 
@@ -55,6 +56,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"hiveio_profile":      dataSourceProfile(),
 			"hiveio_storage_pool": dataSourceStoragePool(),
+			"hiveio_host":         dataSourceHost(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"hiveio_host":            resourceHost(),

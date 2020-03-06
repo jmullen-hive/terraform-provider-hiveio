@@ -118,6 +118,13 @@ func resourceGuestPool() *schema.Resource {
 				Default:  "",
 				Optional: true,
 			},
+			"allowed_hosts": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -161,6 +168,16 @@ func poolFromResource(d *schema.ResourceData) *rest.Pool {
 		backup.Frequency = d.Get("backup.0.frequency").(string)
 		backup.TargetStorageID = d.Get("backup.0.target").(string)
 		pool.Backup = &backup
+	}
+
+	if allowedHosts, ok := d.GetOk("allowed_hosts"); ok {
+		var affinity rest.PoolAffinity
+		hosts := make([]string, len(allowedHosts.([]interface{})))
+		for i, host := range allowedHosts.([]interface{}) {
+			hosts[i] = host.(string)
+		}
+		affinity.AllowedHostIDs = hosts
+		pool.PoolAffinity = &affinity
 	}
 
 	if d.Id() != "" {
@@ -229,6 +246,9 @@ func resourceGuestPoolRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("backup.0.enabled", pool.Backup.Enabled)
 		d.Set("backup.0.frequency", pool.Backup.Frequency)
 		d.Set("backup.0.target", pool.Backup.TargetStorageID)
+	}
+	if pool.PoolAffinity != nil && len(pool.PoolAffinity.AllowedHostIDs) > 0 {
+		d.Set("allowed_hosts", pool.PoolAffinity.AllowedHostIDs)
 	}
 	return nil
 }

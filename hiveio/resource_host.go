@@ -3,6 +3,7 @@ package hiveio
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -48,6 +49,10 @@ func resourceHost() *schema.Resource {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
+			},
+			"hostid": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -95,6 +100,7 @@ func resourceHostRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.Set("gateway_only", host.State == "gateway")
 	d.Set("hostname", host.Hostname)
+	d.Set("hostid", d.Id())
 	return nil
 }
 
@@ -124,6 +130,9 @@ func resourceHostUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceHostDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	host, err := client.GetHost(d.Id())
+	if err != nil {
+		return err
+	}
 	if host.State != "maintenance" {
 		task, err := host.SetState(client, "maintenance")
 		if err != nil {
@@ -134,8 +143,7 @@ func resourceHostDelete(d *schema.ResourceData, m interface{}) error {
 			return fmt.Errorf("Failed to enter maintenance mode: %s", task.Message)
 		}
 	}
-	if err != nil {
-		return err
-	}
+	//services might still be restarting from maintenance mode
+	time.Sleep(10 * time.Second)
 	return host.UnjoinCluster(client)
 }
