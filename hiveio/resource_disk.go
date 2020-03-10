@@ -34,7 +34,8 @@ func resourceDisk() *schema.Resource {
 			},
 			"size": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
+				Default:  30,
 				ForceNew: true,
 			},
 			"format": &schema.Schema{
@@ -58,6 +59,11 @@ func resourceDisk() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"local_file": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -72,9 +78,17 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	srcPool, srcPoolOk := d.GetOk("src_storage")
 	srcFilename, srcFileOk := d.GetOk("src_filename")
 	srcURL, srcURLOk := d.GetOk("src_url")
+	localFile, localFileOk := d.GetOk("local_file")
 
 	var err error
 	var task *rest.Task
+	if localFileOk {
+		storage, err := client.GetStoragePool(id)
+		if err != nil {
+			return err
+		}
+		err = storage.Upload(client, localFile.(string), filename)
+	}
 	if srcPoolOk && srcFileOk {
 		storage, err := client.GetStoragePool(srcPool.(string))
 		if err != nil {
@@ -97,7 +111,9 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	if task == nil {
+		return fmt.Errorf("Failed to create disk: Task was not returned")
+	}
 	task = task.WaitForTask(client, false)
 	if task.State == "completed" {
 		d.SetId(id + "-" + filename)
