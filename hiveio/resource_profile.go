@@ -83,6 +83,80 @@ func resourceProfile() *schema.Resource {
 					},
 				},
 			},
+			"broker_options": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"allow_desktop_composition": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"audio_capture": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"credssp": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"fail_on_cert_mismatch": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"hide_authentication_failure": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"html5": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"redirect_clipboard": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"redirect_disk": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"redirect_pnp": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"redirect_printer": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"redirect_smartcard": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"redirect_usb": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"smart_resize": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+					},
+				},
+			},
 			"backup": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -128,6 +202,23 @@ func profileFromResource(d *schema.ResourceData) *rest.Profile {
 			adConfig.Ou = ou.(string)
 		}
 		profile.AdConfig = &adConfig
+	}
+	if _, ok := d.GetOk("broker_config"); ok {
+		var config rest.ProfileBrokerOptions
+		config.AllowDesktopComposition = d.Get("broker_config.0.allow_desktop_composition").(bool)
+		config.AudioCapture = d.Get("broker_config.0.audio_capture").(bool)
+		config.RedirectCSSP = d.Get("broker_config.0.credssp").(bool)
+		config.FailOnCertMismatch = d.Get("fail_on_cert_mismatch").(bool)
+		config.HideAuthenticationFailure = d.Get("broker_config.0.hide_authentication_failure").(bool)
+		config.RedirectClipboard = d.Get("broker_config.0.redirect_clipboard").(bool)
+		config.RedirectDisk = d.Get("broker_config.0.redirect_disk").(bool)
+		config.RedirectPNP = d.Get("broker_config.0.redirect_pnp").(bool)
+		config.RedirectPrinter = d.Get("broker_config.0.redirect_printer").(bool)
+		config.RedirectSmartCard = d.Get("broker_config.0.redirect_smartcard").(bool)
+		config.RedirectUSB = d.Get("broker_config.0.redirect_usb").(bool)
+		config.SmartResize = d.Get("broker_config.0.smart_resize").(bool)
+		config.EnableHTML5 = d.Get("broker_config.0.html5").(bool)
+		profile.BrokerOptions = &config
 	}
 
 	if _, ok := d.GetOk("user_volumes"); ok {
@@ -183,7 +274,6 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	if profile.AdConfig != nil {
 		d.Set("ad_config.0.domain", profile.AdConfig.Domain)
 		d.Set("ad_config.0.username", profile.AdConfig.Domain)
-		//d.Set("ad_config.0.password", profile.AdConfig.Password)
 		d.Set("ad_config.0.user_group", profile.AdConfig.UserGroup)
 		d.Set("ad_config.0.ou", profile.AdConfig.Ou)
 	}
@@ -199,6 +289,22 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("backup.0.enabled", profile.Backup.Enabled)
 		d.Set("backup.0.frequency", profile.Backup.Frequency)
 		d.Set("backup.0.target", profile.Backup.TargetStorageID)
+	}
+
+	if profile.BrokerOptions != nil {
+		d.Set("broker_options.0.allow_desktop_composition", profile.BrokerOptions.AllowDesktopComposition)
+		d.Set("broker_options.0.audio_capture", profile.BrokerOptions.AudioCapture)
+		d.Set("broker_options.0.credssp", profile.BrokerOptions.RedirectCSSP)
+		d.Set("broker_options.0.fail_on_cert_mismatch", profile.BrokerOptions.FailOnCertMismatch)
+		d.Set("broker_options.0.hide_authentication_failure", profile.BrokerOptions.HideAuthenticationFailure)
+		d.Set("broker_options.0.html5", profile.BrokerOptions.EnableHTML5)
+		d.Set("broker_options.0.redirect_clipboard", profile.BrokerOptions.RedirectClipboard)
+		d.Set("broker_options.0.redirect_disk", profile.BrokerOptions.RedirectDisk)
+		d.Set("broker_options.0.redirect_pnp", profile.BrokerOptions.RedirectPNP)
+		d.Set("broker_options.0.redirect_printer", profile.BrokerOptions.RedirectPrinter)
+		d.Set("broker_options.0.redirect_smartcard", profile.BrokerOptions.RedirectSmartCard)
+		d.Set("broker_options.0.redirect_usb", profile.BrokerOptions.RedirectUSB)
+		d.Set("broker_options.0.smart_resize", profile.BrokerOptions.SmartResize)
 	}
 	return nil
 }

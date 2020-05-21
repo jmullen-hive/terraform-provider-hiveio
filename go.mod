@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk v1.4.1
 	github.com/hashicorp/terraform-svchost v0.0.0-20191119180714-d2e4933b9136 // indirect
 	github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d // indirect
-	github.com/hive-io/hive-go-client v0.0.0-20200408221003-d509360b5a61
+	github.com/hive-io/hive-go-client v0.0.0-20200520224236-e45166305612
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/oklog/run v1.1.0 // indirect
