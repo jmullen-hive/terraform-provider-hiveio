@@ -1,0 +1,40 @@
+#cloud-config
+users:
+  - name: root
+    ssh_authorized_keys:
+      - ssh-rsa MY_SSH_KEY
+packages:
+  - prometheus
+  - prometheus-node-exporter
+snap:
+    commands:
+        00: ['install', grafana]
+write_files:
+  - content: |
+        global:
+          scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+          evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+          external_labels:
+              monitor: 'example'
+
+        # Alertmanager configuration
+        alerting:
+          alertmanagers:
+          - static_configs:
+            - targets: ['localhost:9093']
+
+        scrape_configs:
+          - job_name: 'prometheus'
+            scrape_interval: 5s
+            scrape_timeout: 5s
+            static_configs:
+              - targets: ['localhost:9090']
+
+          - job_name: node
+            static_configs:
+              - targets:
+                  - hive1:9100
+                  - hive2:9100
+                  - hive3:9100
+
+    path: /etc/prometheus/prometheus.yml
