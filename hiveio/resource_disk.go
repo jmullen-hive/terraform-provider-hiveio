@@ -82,30 +82,23 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 
 	var err error
 	var task *rest.Task
+	var storage *rest.StoragePool
+	storage, err = client.GetStoragePool(id)
+	if err != nil {
+		return err
+	}
 	if localFileOk {
-		storage, err := client.GetStoragePool(id)
-		if err != nil {
-			return err
-		}
 		err = storage.Upload(client, localFile.(string), filename)
 	}
 	if srcPoolOk && srcFileOk {
-		storage, err := client.GetStoragePool(srcPool.(string))
+		srcStorage, err := client.GetStoragePool(srcPool.(string))
 		if err != nil {
 			return err
 		}
-		task, err = storage.ConvertDisk(client, srcFilename.(string), id, filename, format)
+		task, err = srcStorage.ConvertDisk(client, srcFilename.(string), id, filename, format)
 	} else if srcURLOk {
-		storage, err := client.GetStoragePool(id)
-		if err != nil {
-			return err
-		}
 		task, err = storage.CopyURL(client, srcURL.(string), filename)
 	} else {
-		storage, err := client.GetStoragePool(id)
-		if err != nil {
-			return err
-		}
 		task, err = storage.CreateDisk(client, filename, format, size)
 	}
 	if err != nil {
@@ -115,16 +108,43 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Failed to create disk: Task was not returned")
 	}
 	task = task.WaitForTask(client, false)
-	if task.State == "completed" {
-		d.SetId(id + "-" + filename)
-	} else if task.State == "failed" {
-		return fmt.Errorf("Failed to Create disk: %s", task.Message)
+	if task.State == "failed" {
+		return fmt.Errorf("Failed to Create disk: %s, %s", task.Message)
 	}
-	return nil
+	disk, err := storage.DiskInfo(client, filename)
+	if err != nil {
+		return err
+	}
+	gbSize := disk.VirtualSize / 1024 / 1024 / 1024
+	if (size - gbSize) > 0 {
+		task, err = storage.GrowDisk(client, filename, size-gbSize)
+		if err != nil {
+			return err
+		}
+		task = task.WaitForTask(client, false)
+		if task.State == "failed" {
+			return fmt.Errorf("Failed to resize disk: %s, %s", task.Message)
+		}
+	}
+	d.SetId(id + "-" + filename)
+	return resourceDiskRead(d, m)
 }
 
 func resourceDiskRead(d *schema.ResourceData, m interface{}) error {
 	//TODO: Add qemu-img info to hive-rest
+	client := m.(*rest.Client)
+	id := d.Get("storage_pool").(string)
+	filename := d.Get("filename").(string)
+	storage, err := client.GetStoragePool(id)
+	if err != nil {
+		return err
+	}
+	disk, err := storage.DiskInfo(client, filename)
+	if err != nil {
+		return err
+	}
+	d.Set("size", disk.VirtualSize/1024/1024/1024)
+	d.Set("format", disk.Format)
 	return nil
 }
 
