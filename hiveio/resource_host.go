@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -13,7 +13,6 @@ func resourceHost() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceHostCreate,
 		Read:   resourceHostRead,
-		Exists: resourceHostExists,
 		Update: resourceHostUpdate,
 		Delete: resourceHostDelete,
 		Importer: &schema.ResourceImporter{
@@ -95,26 +94,16 @@ func resourceHostRead(d *schema.ResourceData, m interface{}) error {
 	var host rest.Host
 	var err error
 	host, err = client.GetHost(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 	d.Set("gateway_only", host.State == "gateway")
 	d.Set("hostname", host.Hostname)
 	d.Set("hostid", d.Id())
 	return nil
-}
-
-func resourceHostExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	id := d.Id()
-	_, err := client.GetHost(id)
-
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func resourceHostUpdate(d *schema.ResourceData, m interface{}) error {

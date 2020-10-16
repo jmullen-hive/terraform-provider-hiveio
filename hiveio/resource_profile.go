@@ -3,7 +3,7 @@ package hiveio
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -11,7 +11,6 @@ func resourceProfile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceProfileCreate,
 		Read:   resourceProfileRead,
-		Exists: resourceProfileExists,
 		Update: resourceProfileUpdate,
 		Delete: resourceProfileDelete,
 		Importer: &schema.ResourceImporter{
@@ -264,7 +263,10 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	var profile *rest.Profile
 	var err error
 	profile, err = client.GetProfile(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 
@@ -307,23 +309,6 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("broker_options.0.smart_resize", profile.BrokerOptions.SmartResize)
 	}
 	return nil
-}
-
-func resourceProfileExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	var err error
-	id := d.Id()
-	if id != "" {
-		_, err = client.GetProfile(id)
-	} else {
-		_, err = client.GetProfileByName(d.Get("name").(string))
-	}
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func resourceProfileUpdate(d *schema.ResourceData, m interface{}) error {

@@ -3,7 +3,7 @@ package hiveio
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -11,7 +11,6 @@ func resourceRealm() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceRealmCreate,
 		Read:   resourceRealmRead,
-		Exists: resourceRealmExists,
 		Update: resourceRealmUpdate,
 		Delete: resourceRealmDelete,
 		Importer: &schema.ResourceImporter{
@@ -82,26 +81,16 @@ func resourceRealmRead(d *schema.ResourceData, m interface{}) error {
 	var realm rest.Realm
 	var err error
 	realm, err = client.GetRealm(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 	d.SetId(realm.Name)
 	d.Set("name", realm.Name)
 	d.Set("fqdn", realm.FQDN)
 	return nil
-}
-
-func resourceRealmExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	id := d.Id()
-	_, err := client.GetRealm(id)
-
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func resourceRealmUpdate(d *schema.ResourceData, m interface{}) error {

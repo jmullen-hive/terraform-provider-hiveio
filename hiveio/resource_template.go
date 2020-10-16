@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -13,7 +13,6 @@ func resourceTemplate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceTemplateCreate,
 		Read:   resourceTemplateRead,
-		Exists: resourceTemplateExists,
 		Update: resourceTemplateUpdate,
 		Delete: resourceTemplateDelete,
 		Importer: &schema.ResourceImporter{
@@ -184,7 +183,10 @@ func resourceTemplateCreate(d *schema.ResourceData, m interface{}) error {
 func resourceTemplateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	template, err := client.GetTemplate(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 
@@ -213,19 +215,6 @@ func resourceTemplateRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
-}
-
-func resourceTemplateExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	var err error
-	name := d.Id()
-	_, err = client.GetTemplate(name)
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func resourceTemplateUpdate(d *schema.ResourceData, m interface{}) error {

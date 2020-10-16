@@ -1,7 +1,7 @@
 package hiveio
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -9,7 +9,6 @@ func resourceLicense() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLicenseCreate,
 		Read:   resourceLicenseRead,
-		Exists: resourceLicenseExists,
 		Delete: resourceLicenseDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -45,24 +44,6 @@ func resourceLicenseCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceLicenseRead(d *schema.ResourceData, m interface{}) error {
 	return nil
-}
-
-func resourceLicenseExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	clusterID, err := client.ClusterID()
-	if err != nil {
-		return false, err
-	}
-	cluster, err := client.GetCluster(clusterID)
-	if err != nil {
-		return false, err
-	}
-	_, _, err = cluster.GetLicenseInfo(client)
-
-	if err != nil {
-		return false, nil
-	}
-	return true, nil
 }
 
 func resourceLicenseDelete(d *schema.ResourceData, m interface{}) error {

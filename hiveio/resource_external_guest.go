@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -12,7 +12,6 @@ func resourceExternalGuest() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceExternalGuestCreate,
 		Read:   resourceExternalGuestRead,
-		Exists: resourceExternalGuestExists,
 		Delete: resourceExternalGuestDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -81,7 +80,10 @@ func resourceExternalGuestCreate(d *schema.ResourceData, m interface{}) error {
 func resourceExternalGuestRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	guest, err := client.GetGuest(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 

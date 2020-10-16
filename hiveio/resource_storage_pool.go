@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -14,7 +14,6 @@ func resourceStoragePool() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceStoragePoolCreate,
 		Read:   resourceStoragePoolRead,
-		Exists: resourceStoragePoolExists,
 		Delete: resourceStoragePoolDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -163,7 +162,10 @@ func resourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 	var storage *rest.StoragePool
 	var err error
 	storage, err = client.GetStoragePool(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 	d.SetId(storage.ID)
@@ -181,22 +183,6 @@ func resourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceStoragePoolExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	var err error
-	if d.Id() != "" {
-		_, err = client.GetStoragePool(d.Id())
-	} else {
-		_, err = client.GetStoragePoolByName(d.Get("name").(string))
-	}
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
 func resourceStoragePoolDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	storage, err := client.GetStoragePool(d.Id())
@@ -210,6 +196,9 @@ func resourceStoragePoolDelete(d *schema.ResourceData, m interface{}) error {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(fmt.Errorf("Storage Pool %s is in use", d.Id()))
 		}
-		return resource.NonRetryableError(err)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	})
 }

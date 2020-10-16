@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -14,7 +14,6 @@ func resourceVM() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceVMCreate,
 		Read:   resourceVMRead,
-		Exists: resourceVMExists,
 		Update: resourceVMUpdate,
 		Delete: resourceVMDelete,
 		Importer: &schema.ResourceImporter{
@@ -276,14 +275,21 @@ func resourceVMCreate(d *schema.ResourceData, m interface{}) error {
 				time.Sleep(5 * time.Second)
 				return resource.RetryableError(fmt.Errorf("Building pool %s", pool.ID))
 			}
-			return resource.NonRetryableError((err))
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		}
 		for _, v := range guest.TargetState {
 			if v == guest.GuestState {
-				return resource.NonRetryableError(nil)
+				return nil
 			}
 		}
-		return resource.NonRetryableError(guest.WaitForGuest(client, d.Timeout(schema.TimeoutCreate)))
+		err = guest.WaitForGuest(client, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	})
 	if err != nil {
 		return err
@@ -295,7 +301,10 @@ func resourceVMCreate(d *schema.ResourceData, m interface{}) error {
 func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	pool, err := client.GetPool(d.Id())
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 
@@ -343,17 +352,6 @@ func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceVMExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	var err error
-	id := d.Id()
-	_, err = client.GetPool(id)
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	}
-	return true, err
-}
-
 func resourceVMUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	pool := vmFromResource(d)
@@ -379,8 +377,11 @@ func resourceVMDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 			time.Sleep(5 * time.Second)
-			return resource.NonRetryableError(nil)
+			return nil
 		}
-		return resource.NonRetryableError(err)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	})
 }

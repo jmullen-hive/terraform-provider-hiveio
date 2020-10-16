@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
@@ -13,7 +13,6 @@ func resourceDisk() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceDiskCreate,
 		Read:   resourceDiskRead,
-		Exists: resourceDiskExists,
 		Delete: resourceDiskDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -109,7 +108,7 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	task = task.WaitForTask(client, false)
 	if task.State == "failed" {
-		return fmt.Errorf("Failed to Create disk: %s, %s", task.Message)
+		return fmt.Errorf("Failed to Create disk: %s", task.Message)
 	}
 	disk, err := storage.DiskInfo(client, filename)
 	if err != nil {
@@ -123,7 +122,7 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		task = task.WaitForTask(client, false)
 		if task.State == "failed" {
-			return fmt.Errorf("Failed to resize disk: %s, %s", task.Message)
+			return fmt.Errorf("Failed to resize disk: %s", task.Message)
 		}
 	}
 	d.SetId(id + "-" + filename)
@@ -140,7 +139,10 @@ func resourceDiskRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	disk, err := storage.DiskInfo(client, filename)
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 	d.Set("size", disk.VirtualSize/1024/1024/1024)
