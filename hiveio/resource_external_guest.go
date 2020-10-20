@@ -96,17 +96,6 @@ func resourceExternalGuestRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceExternalGuestExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	var err error
-	id := d.Id()
-	_, err = client.GetGuest(id)
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	}
-	return true, err
-}
-
 func resourceExternalGuestDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
 	guest, err := client.GetGuest(d.Id())
