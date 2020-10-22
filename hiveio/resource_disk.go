@@ -135,7 +135,10 @@ func resourceDiskRead(d *schema.ResourceData, m interface{}) error {
 	id := d.Get("storage_pool").(string)
 	filename := d.Get("filename").(string)
 	storage, err := client.GetStoragePool(id)
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		d.SetId("")
+		return nil
+	} else if err != nil {
 		return err
 	}
 	disk, err := storage.DiskInfo(client, filename)
