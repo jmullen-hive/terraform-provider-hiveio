@@ -38,11 +38,11 @@ func resourceProfile() *schema.Resource {
 						},
 						"username": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"password": {
 							Type:      schema.TypeString,
-							Required:  true,
+							Optional:  true,
 							Sensitive: true,
 						},
 						"user_group": {
@@ -103,6 +103,31 @@ func resourceProfile() *schema.Resource {
 							Optional: true,
 							Default:  true,
 						},
+						"disable_full_window_drag": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"disable_menu_anims": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"disable_printer": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"disable_themes": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"disable_wallpaper": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
 						"fail_on_cert_mismatch": {
 							Type:     schema.TypeBool,
 							Optional: true,
@@ -114,6 +139,11 @@ func resourceProfile() *schema.Resource {
 							Default:  false,
 						},
 						"html5": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"inject_password": {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  false,
@@ -217,6 +247,12 @@ func profileFromResource(d *schema.ResourceData) *rest.Profile {
 		config.RedirectUSB = d.Get("broker_config.0.redirect_usb").(bool)
 		config.SmartResize = d.Get("broker_config.0.smart_resize").(bool)
 		config.EnableHTML5 = d.Get("broker_config.0.html5").(bool)
+		config.DisableFullWindowDrag = d.Get("broker_config.0.disable_full_window_drag").(bool)
+		config.DisableMenuAnims = d.Get("broker_config.0.disable_menu_anims").(bool)
+		config.DisablePrinter = d.Get("broker_config.0.disable_printer").(bool)
+		config.DisableThemes = d.Get("broker_config.0.disable_themes").(bool)
+		config.DisableWallpaper = d.Get("broker_config.0.disable_wallpaper").(bool)
+		config.InjectPassword = d.Get("broker_config.0.inject_password").(bool)
 		profile.BrokerOptions = &config
 	}
 
@@ -297,9 +333,15 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("broker_options.0.allow_desktop_composition", profile.BrokerOptions.AllowDesktopComposition)
 		d.Set("broker_options.0.audio_capture", profile.BrokerOptions.AudioCapture)
 		d.Set("broker_options.0.credssp", profile.BrokerOptions.RedirectCSSP)
+		d.Set("broker_options.0.disable_full_window_drag", profile.BrokerOptions.DisableFullWindowDrag)
+		d.Set("broker_options.0.disable_menu_anims", profile.BrokerOptions.DisableMenuAnims)
+		d.Set("broker_options.0.disable_printer", profile.BrokerOptions.DisablePrinter)
+		d.Set("broker_options.0.disable_themes", profile.BrokerOptions.DisableThemes)
+		d.Set("broker_options.0.disable_wallpaper", profile.BrokerOptions.DisableWallpaper)
 		d.Set("broker_options.0.fail_on_cert_mismatch", profile.BrokerOptions.FailOnCertMismatch)
 		d.Set("broker_options.0.hide_authentication_failure", profile.BrokerOptions.HideAuthenticationFailure)
 		d.Set("broker_options.0.html5", profile.BrokerOptions.EnableHTML5)
+		d.Set("broker_options.0.inject_password", profile.BrokerOptions.InjectPassword)
 		d.Set("broker_options.0.redirect_clipboard", profile.BrokerOptions.RedirectClipboard)
 		d.Set("broker_options.0.redirect_disk", profile.BrokerOptions.RedirectDisk)
 		d.Set("broker_options.0.redirect_pnp", profile.BrokerOptions.RedirectPNP)
