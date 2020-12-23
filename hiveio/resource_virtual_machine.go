@@ -181,10 +181,11 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 	}
 
 	guestProfile := rest.PoolGuestProfile{
-		OS:       d.Get("os").(string),
-		Firmware: d.Get("firmware").(string),
-		Vga:      d.Get("display_driver").(string),
-		Gpu:      d.Get("gpu").(bool),
+		OS:         d.Get("os").(string),
+		Firmware:   d.Get("firmware").(string),
+		Vga:        d.Get("display_driver").(string),
+		Gpu:        d.Get("gpu").(bool),
+		Persistent: true,
 	}
 
 	if cpu, ok := d.GetOk("cpu"); ok {
