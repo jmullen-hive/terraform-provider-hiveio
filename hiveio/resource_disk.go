@@ -176,5 +176,9 @@ func resourceDiskDelete(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	return storage.DeleteFile(client, d.Get("filename").(string))
+	err = storage.DeleteFile(client, d.Get("filename").(string))
+	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+		return nil
+	}
+	return err
 }
