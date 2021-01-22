@@ -18,11 +18,11 @@ func resourceProfile() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"timezone": &schema.Schema{
+			"timezone": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -230,29 +230,35 @@ func profileFromResource(d *schema.ResourceData) *rest.Profile {
 		if ou, ok := d.GetOk("ad_config.0.ou"); ok {
 			adConfig.Ou = ou.(string)
 		}
+		if username, ok := d.GetOk("ad_config.0.username"); ok {
+			adConfig.Username = username.(string)
+		}
+		if password, ok := d.GetOk("ad_config.0.password"); ok {
+			adConfig.Password = password.(string)
+		}
 		profile.AdConfig = &adConfig
 	}
-	if _, ok := d.GetOk("broker_config"); ok {
+	if _, ok := d.GetOk("broker_options"); ok {
 		var config rest.ProfileBrokerOptions
-		config.AllowDesktopComposition = d.Get("broker_config.0.allow_desktop_composition").(bool)
-		config.AudioCapture = d.Get("broker_config.0.audio_capture").(bool)
-		config.RedirectCSSP = d.Get("broker_config.0.credssp").(bool)
-		config.FailOnCertMismatch = d.Get("fail_on_cert_mismatch").(bool)
-		config.HideAuthenticationFailure = d.Get("broker_config.0.hide_authentication_failure").(bool)
-		config.RedirectClipboard = d.Get("broker_config.0.redirect_clipboard").(bool)
-		config.RedirectDisk = d.Get("broker_config.0.redirect_disk").(bool)
-		config.RedirectPNP = d.Get("broker_config.0.redirect_pnp").(bool)
-		config.RedirectPrinter = d.Get("broker_config.0.redirect_printer").(bool)
-		config.RedirectSmartCard = d.Get("broker_config.0.redirect_smartcard").(bool)
-		config.RedirectUSB = d.Get("broker_config.0.redirect_usb").(bool)
-		config.SmartResize = d.Get("broker_config.0.smart_resize").(bool)
-		config.EnableHTML5 = d.Get("broker_config.0.html5").(bool)
-		config.DisableFullWindowDrag = d.Get("broker_config.0.disable_full_window_drag").(bool)
-		config.DisableMenuAnims = d.Get("broker_config.0.disable_menu_anims").(bool)
-		config.DisablePrinter = d.Get("broker_config.0.disable_printer").(bool)
-		config.DisableThemes = d.Get("broker_config.0.disable_themes").(bool)
-		config.DisableWallpaper = d.Get("broker_config.0.disable_wallpaper").(bool)
-		config.InjectPassword = d.Get("broker_config.0.inject_password").(bool)
+		config.AllowDesktopComposition = d.Get("broker_options.0.allow_desktop_composition").(bool)
+		config.AudioCapture = d.Get("broker_options.0.audio_capture").(bool)
+		config.RedirectCSSP = d.Get("broker_options.0.credssp").(bool)
+		config.FailOnCertMismatch = d.Get("broker_options.0.fail_on_cert_mismatch").(bool)
+		config.HideAuthenticationFailure = d.Get("broker_options.0.hide_authentication_failure").(bool)
+		config.RedirectClipboard = d.Get("broker_options.0.redirect_clipboard").(bool)
+		config.RedirectDisk = d.Get("broker_options.0.redirect_disk").(bool)
+		config.RedirectPNP = d.Get("broker_options.0.redirect_pnp").(bool)
+		config.RedirectPrinter = d.Get("broker_options.0.redirect_printer").(bool)
+		config.RedirectSmartCard = d.Get("broker_options.0.redirect_smartcard").(bool)
+		config.RedirectUSB = d.Get("broker_options.0.redirect_usb").(bool)
+		config.SmartResize = d.Get("broker_options.0.smart_resize").(bool)
+		config.EnableHTML5 = d.Get("broker_options.0.html5").(bool)
+		config.DisableFullWindowDrag = d.Get("broker_options.0.disable_full_window_drag").(bool)
+		config.DisableMenuAnims = d.Get("broker_options.0.disable_menu_anims").(bool)
+		config.DisablePrinter = d.Get("broker_options.0.disable_printer").(bool)
+		config.DisableThemes = d.Get("broker_options.0.disable_themes").(bool)
+		config.DisableWallpaper = d.Get("broker_options.0.disable_wallpaper").(bool)
+		config.InjectPassword = d.Get("broker_options.0.inject_password").(bool)
 		profile.BrokerOptions = &config
 	}
 
