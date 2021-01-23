@@ -6,6 +6,9 @@ import (
 	"github.com/hive-io/terraform-provider-hiveio/hiveio"
 )
 
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+//go:generate terraform fmt -recursive ./examples/
+
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() *schema.Provider {

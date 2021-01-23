@@ -23,43 +23,51 @@ func resourceProfile() *schema.Resource {
 				Required: true,
 			},
 			"timezone": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Description: "A timezone to inject to guests in the profile.",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 			"ad_config": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Description: "active directory options",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"domain": {
-							Type:     schema.TypeString,
-							Required: true,
+							Description: "The realm name to use for guests in this profile.",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 						"username": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Description: "Username for a service account to override the one in realm.",
+							Type:        schema.TypeString,
+							Optional:    true,
 						},
 						"password": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
+							Description: "Password for the service account.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Sensitive:   true,
 						},
 						"user_group": {
-							Type:     schema.TypeString,
-							Required: true,
+							Description: "AD group for users who can login through the broker.",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 						"ou": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Description: "OU for guests using this profile.",
+							Type:        schema.TypeString,
+							Optional:    true,
 						},
 					},
 				},
 			},
 			"user_volumes": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Description: "User Volume options.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"backup_schedule": {

@@ -9,7 +9,8 @@ import (
 
 func dataSourceHost() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHostRead,
+		Description: "A data source to retrieve host information by ip or hostname.",
+		Read:        dataSourceHostRead,
 		Schema: map[string]*schema.Schema{
 			"ip_address": {
 				Type:     schema.TypeString,

@@ -19,12 +19,14 @@ func resourceRealm() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"fqdn": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "fully qualified domain nam",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "netbios name",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"enabled": {
 				Type:     schema.TypeBool,

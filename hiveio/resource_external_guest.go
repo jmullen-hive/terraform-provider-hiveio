@@ -10,9 +10,10 @@ import (
 
 func resourceExternalGuest() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceExternalGuestCreate,
-		Read:   resourceExternalGuestRead,
-		Delete: resourceExternalGuestDelete,
+		Description: "This resource can be used to add an external guest for access through the broker.",
+		Create:      resourceExternalGuestCreate,
+		Read:        resourceExternalGuestRead,
+		Delete:      resourceExternalGuestDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,19 +28,22 @@ func resourceExternalGuest() *schema.Resource {
 				ForceNew: true,
 			},
 			"address": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Description: "Hostname or ip address",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"username": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Description: "The user the guest will be assigned to",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"realm": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Description: "The realm of the user",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"os": {
 				Type:     schema.TypeString,

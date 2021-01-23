@@ -11,8 +11,8 @@ resource "hiveio_disk" "disk3" {
   filename     = "terraform3.qcow2"
   format       = "qcow2"
   storage_pool = hiveio_storage_pool.vms.id
-  src_url = "https://cloud-images.ubuntu.com/eoan/current/eoan-server-cloudimg-amd64.img"
-  size = 30
+  src_url      = "https://cloud-images.ubuntu.com/eoan/current/eoan-server-cloudimg-amd64.img"
+  size         = 30
 }
 
 resource "hiveio_profile" "default_profile" {
@@ -54,16 +54,16 @@ data "template_file" "user_data" {
 }
 
 resource "hiveio_guest_pool" "ubuntu_pool" {
-  name         = "ubuntu"
-  cpu          = 1
-  memory       = 1024
-  density      = [2, 4]
-  seed         = "UBUNTU"
-  template     = hiveio_template.ubuntu_server.id
-  profile      = hiveio_profile.default_profile.id
-  persistent = false
-  storage_type = "disk"
-  storage_id   = "disk"
-  cloudinit_enabled = true
+  name               = "ubuntu"
+  cpu                = 1
+  memory             = 1024
+  density            = [2, 4]
+  seed               = "UBUNTU"
+  template           = hiveio_template.ubuntu_server.id
+  profile            = hiveio_profile.default_profile.id
+  persistent         = false
+  storage_type       = "disk"
+  storage_id         = "disk"
+  cloudinit_enabled  = true
   cloudinit_userdata = data.template_file.user_data.rendered
 }

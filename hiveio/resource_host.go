@@ -29,20 +29,18 @@ func resourceHost() *schema.Resource {
 				Computed: true,
 			},
 			"username": {
-				Type:        schema.TypeString,
-				Description: "username",
-				Default:     "admin",
-				Optional:    true,
+				Type:     schema.TypeString,
+				Default:  "admin",
+				Optional: true,
 			},
 			"cluster_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"password": {
-				Type:        schema.TypeString,
-				Description: "password",
-				Required:    true,
-				Sensitive:   true,
+				Type:      schema.TypeString,
+				Required:  true,
+				Sensitive: true,
 			},
 			"gateway_only": {
 				Type:     schema.TypeBool,

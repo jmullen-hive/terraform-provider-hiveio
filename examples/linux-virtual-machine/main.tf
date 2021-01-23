@@ -45,8 +45,8 @@ resource "hiveio_virtual_machine" "kubuntu" {
     network   = "prod"
     vlan      = 0
   }
-   backup {
-    enabled   = true  
+  backup {
+    enabled   = true
     frequency = "daily"
     target    = hiveio_storage_pool.backup.id
   }

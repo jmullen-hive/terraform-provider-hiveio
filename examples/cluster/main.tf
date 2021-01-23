@@ -6,7 +6,7 @@ provider "hiveio" {
 }
 
 variable "license" {
-  type    = string
+  type = string
 }
 
 resource "hiveio_license" "license" {
@@ -16,14 +16,14 @@ resource "hiveio_license" "license" {
 //IP Addresses or hostnames of the hosts to add
 variable "hosts" {
   type    = set(string)
-  default = ["192.168.3.197", "192.168.3.121" ]
+  default = ["192.168.3.197", "192.168.3.121"]
 }
 
 resource "hiveio_host" "host" {
-  for_each = var.hosts
+  for_each   = var.hosts
   ip_address = each.key
-  username = "admin"
-  password = "admin"
+  username   = "admin"
+  password   = "admin"
   depends_on = [
     hiveio_license.license
   ]

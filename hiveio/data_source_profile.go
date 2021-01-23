@@ -9,7 +9,8 @@ import (
 
 func dataSourceProfile() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceProfileRead,
+		Description: "The profile data source can be used to retrieve settings from an existing profile.",
+		Read:        dataSourceProfileRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -25,26 +26,31 @@ func dataSourceProfile() *schema.Resource {
 				Computed: true,
 			},
 			"ad_config": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Description: "active directory options",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"domain": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The realm name used by guests in this profile.",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 						"username": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "Username for the active directory service account.",
+							Type:        schema.TypeString,
+							Optional:    true,
 						},
 						"user_group": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "AD group for users who can login through the broker.",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
 						"ou": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "OU for guests using this profile.",
+							Type:        schema.TypeString,
+							Optional:    true,
 						},
 					},
 				},
@@ -224,18 +230,6 @@ func dataSourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", profile.Name)
 	d.Set("timezone", profile.Timezone)
 
-	if _, ok := d.GetOk("ad_config"); ok {
-		var adConfig rest.ProfileADConfig
-		adConfig.Domain = d.Get("ad_config.0.domain").(string)
-		adConfig.Username = d.Get("ad_config.0.username").(string)
-		adConfig.Password = d.Get("ad_config.0.password").(string)
-		adConfig.UserGroup = d.Get("ad_config.0.user_group").(string)
-		if ou, ok := d.GetOk("ad_config.0.ou"); ok {
-			adConfig.Ou = ou.(string)
-		}
-		profile.AdConfig = &adConfig
-	}
-
 	if profile.AdConfig != nil {
 		d.Set("ad_config.0.domain", profile.AdConfig.Domain)
 		d.Set("ad_config.0.username", profile.AdConfig.Domain)
@@ -248,6 +242,33 @@ func dataSourceProfileRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("user_volumes.0.size", profile.UserVolumes.Size)
 		d.Set("user_volumes.0.backup_schedule", profile.UserVolumes.BackupSchedule)
 		d.Set("user_volumes.0.target", profile.UserVolumes.Target)
+	}
+	if profile.Backup != nil {
+		d.Set("backup.0.enabled", profile.Backup.Enabled)
+		d.Set("backup.0.frequency", profile.Backup.Frequency)
+		d.Set("backup.0.target", profile.Backup.TargetStorageID)
+	}
+
+	if profile.BrokerOptions != nil {
+		d.Set("broker_options.0.allow_desktop_composition", profile.BrokerOptions.AllowDesktopComposition)
+		d.Set("broker_options.0.audio_capture", profile.BrokerOptions.AudioCapture)
+		d.Set("broker_options.0.credssp", profile.BrokerOptions.RedirectCSSP)
+		d.Set("broker_options.0.disable_full_window_drag", profile.BrokerOptions.DisableFullWindowDrag)
+		d.Set("broker_options.0.disable_menu_anims", profile.BrokerOptions.DisableMenuAnims)
+		d.Set("broker_options.0.disable_printer", profile.BrokerOptions.DisablePrinter)
+		d.Set("broker_options.0.disable_themes", profile.BrokerOptions.DisableThemes)
+		d.Set("broker_options.0.disable_wallpaper", profile.BrokerOptions.DisableWallpaper)
+		d.Set("broker_options.0.fail_on_cert_mismatch", profile.BrokerOptions.FailOnCertMismatch)
+		d.Set("broker_options.0.hide_authentication_failure", profile.BrokerOptions.HideAuthenticationFailure)
+		d.Set("broker_options.0.html5", profile.BrokerOptions.EnableHTML5)
+		d.Set("broker_options.0.inject_password", profile.BrokerOptions.InjectPassword)
+		d.Set("broker_options.0.redirect_clipboard", profile.BrokerOptions.RedirectClipboard)
+		d.Set("broker_options.0.redirect_disk", profile.BrokerOptions.RedirectDisk)
+		d.Set("broker_options.0.redirect_pnp", profile.BrokerOptions.RedirectPNP)
+		d.Set("broker_options.0.redirect_printer", profile.BrokerOptions.RedirectPrinter)
+		d.Set("broker_options.0.redirect_smartcard", profile.BrokerOptions.RedirectSmartCard)
+		d.Set("broker_options.0.redirect_usb", profile.BrokerOptions.RedirectUSB)
+		d.Set("broker_options.0.smart_resize", profile.BrokerOptions.SmartResize)
 	}
 	return nil
 }

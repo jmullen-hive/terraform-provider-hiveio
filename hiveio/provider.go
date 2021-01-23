@@ -3,10 +3,38 @@ package hiveio
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
+
+func init() {
+	// Set descriptions to support markdown syntax, this will be used in document generation
+	// and the language server.
+	schema.DescriptionKind = schema.StringMarkdown
+
+	schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
+		desc := s.Description
+		if s.Default != nil {
+			desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
+		}
+		if s.Deprecated != "" {
+			desc += " " + s.Deprecated
+		}
+		return strings.TrimSpace(desc)
+	}
+
+	// Customize the content of descriptions when output. For example you can add defaults on
+	// to the exported descriptions if present.
+	// schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
+	// 	desc := s.Description
+	// 	if s.Default != nil {
+	// 		desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
+	// 	}
+	// 	return strings.TrimSpace(desc)
+	// }
+}
 
 //Provider hiveio terraform provider
 func Provider() *schema.Provider {
@@ -17,40 +45,40 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HIO_USER", "admin"),
-				Description: "username",
+				Description: "The username to connect to the server. Defaults to admin",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HIO_PASS", nil),
-				Description: "password",
+				Description: "The password to use for connection to the server.",
 				Sensitive:   true,
 			},
 			"realm": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HIO_REALM", "local"),
-				Description: "secret",
+				Description: "The realm to use to connect to the server. Defaults to local",
 				Sensitive:   true,
 			},
 			"host": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HIO_HOST", "admin"),
-				Description: "hostname or ip address of the server",
+				Description: "hostname or ip address of the server.",
 			},
 			"port": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HIO_PORT", "8443"),
-				Description: "hostname or ip address of the server",
+				Description: "The port to use to connect to the server. Defaults to 8443",
 			},
 			"insecure": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				DefaultFunc: schema.EnvDefaultFunc("HIO_INSECURE", false),
-				Description: "Ignore SSL certificate errors",
+				Description: "Ignore SSL certificate errors.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{

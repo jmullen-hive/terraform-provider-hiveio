@@ -9,7 +9,8 @@ import (
 
 func dataSourceStoragePool() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceStoragePoolRead,
+		Description: "The storage pool data source can be used to retrieve settings from an existing storage pool",
+		Read:        dataSourceStoragePoolRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,

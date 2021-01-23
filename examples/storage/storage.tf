@@ -18,13 +18,13 @@ resource "hiveio_storage_pool" "nfs" {
 }*/
 
 resource "hiveio_storage_pool" "cifs" {
-  name   = "cifs"
-  type   = "cifs"
-  server = "synology"
-  path   = "vms"
+  name     = "cifs"
+  type     = "cifs"
+  server   = "synology"
+  path     = "vms"
   username = "user1@test.domain.net"
   password = "password"
-  roles  = ["template", "guest"]
+  roles    = ["template", "guest"]
 }
 
 variable "s3AccessKey" {
@@ -32,13 +32,13 @@ variable "s3AccessKey" {
 }
 
 resource "hiveio_storage_pool" "s3" {
-  name   = "s3"
-  type   = "s3"
-  path   = "hio-replication-test"
-  s3_access_key_id = "KEY_ID"
+  name                 = "s3"
+  type                 = "s3"
+  path                 = "hio-replication-test"
+  s3_access_key_id     = "KEY_ID"
   s3_secret_access_key = var.s3AccessKey
-  s3_region = "us-east-1"
-  roles  = ["iso", "backup"]
+  s3_region            = "us-east-1"
+  roles                = ["iso", "backup"]
 }
 
 variable "azureAccessKey" {
@@ -46,35 +46,35 @@ variable "azureAccessKey" {
 }
 
 resource "hiveio_storage_pool" "azure" {
-  name   = "azure"
-  type   = "azure"
-  path   = "rclone-test"
+  name     = "azure"
+  type     = "azure"
+  path     = "rclone-test"
   username = "username"
-  key = var.azureAccessKey
-  roles  = ["backup"]
+  key      = var.azureAccessKey
+  roles    = ["backup"]
 }
 
 resource "hiveio_storage_pool" "ftp" {
-  name = "ftp"
-  type = "ftp"
+  name   = "ftp"
+  type   = "ftp"
   server = "synology"
-  path = "/vms"
+  path   = "/vms"
   roles  = ["template", "iso", "backup"]
 }
 
 resource "hiveio_storage_pool" "sftp" {
-  name = "sftp"
-  type = "sftp"
-  server = "synology"
-  path = "/vms"
+  name     = "sftp"
+  type     = "sftp"
+  server   = "synology"
+  path     = "/vms"
   username = "user"
   password = "password"
-  roles  = ["backup"]
+  roles    = ["backup"]
 }
 
 resource "hiveio_storage_pool" "http" {
-  name = "http"
-  type = "http"
-  url = "https://cloud-images.ubuntu.com/bionic/current"
-  roles  = ["iso", "template"]
+  name  = "http"
+  type  = "http"
+  url   = "https://cloud-images.ubuntu.com/bionic/current"
+  roles = ["iso", "template"]
 }
