@@ -7,9 +7,10 @@ import (
 
 func resourceLicense() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLicenseCreate,
-		Read:   resourceLicenseRead,
-		Delete: resourceLicenseDelete,
+		Description: "Add a license for a new cluster",
+		Create:      resourceLicenseCreate,
+		Read:        resourceLicenseRead,
+		Delete:      resourceLicenseDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

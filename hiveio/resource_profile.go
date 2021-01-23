@@ -26,6 +26,7 @@ func resourceProfile() *schema.Resource {
 				Description: "A timezone to inject to guests in the profile.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "disabled",
 			},
 			"ad_config": {
 				Description: "active directory options",

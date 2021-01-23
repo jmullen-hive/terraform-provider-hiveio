@@ -3,12 +3,12 @@
 page_title: "hiveio_license Resource - terraform-provider-hiveio"
 subcategory: ""
 description: |-
-  
+  Add a license for a new cluster
 ---
 
 # Resource `hiveio_license`
 
-
+Add a license for a new cluster
 
 
 
