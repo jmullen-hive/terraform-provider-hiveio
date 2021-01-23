@@ -20,43 +20,43 @@ func resourceStoragePool() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"url": &schema.Schema{
+			"url": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"server": &schema.Schema{
+			"server": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"path": &schema.Schema{
+			"path": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"password": &schema.Schema{
+			"password": {
 				Type:      schema.TypeString,
 				Optional:  true,
 				ForceNew:  true,
 				Sensitive: true,
 			},
-			"key": &schema.Schema{
+			"key": {
 				Type:      schema.TypeString,
 				Optional:  true,
 				ForceNew:  true,

@@ -11,27 +11,27 @@ func dataSourceStoragePool() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceStoragePoolRead,
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"server": &schema.Schema{
+			"server": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"path": &schema.Schema{
+			"path": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},

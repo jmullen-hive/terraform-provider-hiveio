@@ -21,27 +21,27 @@ func resourceExternalGuest() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"address": &schema.Schema{
+			"address": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"realm": &schema.Schema{
+			"realm": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"os": &schema.Schema{
+			"os": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,

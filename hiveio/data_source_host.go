@@ -11,23 +11,23 @@ func dataSourceHost() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceHostRead,
 		Schema: map[string]*schema.Schema{
-			"ip_address": &schema.Schema{
+			"ip_address": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"hostname": &schema.Schema{
+			"hostname": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"cluster_id": &schema.Schema{
+			"cluster_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"hostid": &schema.Schema{
+			"hostid": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"software_version": &schema.Schema{
+			"software_version": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

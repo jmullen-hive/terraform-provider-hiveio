@@ -15,7 +15,7 @@ func resourceLicense() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"license": &schema.Schema{
+			"license": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,

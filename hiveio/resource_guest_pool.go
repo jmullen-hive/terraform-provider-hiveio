@@ -24,7 +24,7 @@ func resourceGuestPool() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -38,49 +38,49 @@ func resourceGuestPool() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 			},
-			"cpu": &schema.Schema{
+			"cpu": {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"memory": &schema.Schema{
+			"memory": {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"gpu": &schema.Schema{
+			"gpu": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
-			"persistent": &schema.Schema{
+			"persistent": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 				ForceNew: true,
 			},
-			"template": &schema.Schema{
+			"template": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"profile": &schema.Schema{
+			"profile": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"seed": &schema.Schema{
+			"seed": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"storage_type": &schema.Schema{
+			"storage_type": {
 				Type:     schema.TypeString,
 				Default:  "disk",
 				Optional: true,
 				ForceNew: true,
 			},
-			"storage_id": &schema.Schema{
+			"storage_id": {
 				Type:     schema.TypeString,
 				Default:  "disk",
 				Optional: true,
@@ -107,12 +107,12 @@ func resourceGuestPool() *schema.Resource {
 					},
 				},
 			},
-			"cloudinit_enabled": &schema.Schema{
+			"cloudinit_enabled": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
-			"cloudinit_userdata": &schema.Schema{
+			"cloudinit_userdata": {
 				Type:     schema.TypeString,
 				Default:  "",
 				Optional: true,
@@ -124,7 +124,7 @@ func resourceGuestPool() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"wait_for_build": &schema.Schema{
+			"wait_for_build": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,

@@ -25,43 +25,43 @@ func resourceVM() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"cpu": &schema.Schema{
+			"cpu": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			"memory": &schema.Schema{
+			"memory": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			"gpu": &schema.Schema{
+			"gpu": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
-			"firmware": &schema.Schema{
+			"firmware": {
 				Type:     schema.TypeString,
 				Default:  "uefi",
 				Optional: true,
 			},
-			"display_driver": &schema.Schema{
+			"display_driver": {
 				Type:     schema.TypeString,
 				Default:  "cirrus",
 				Optional: true,
 			},
-			"os": &schema.Schema{
+			"os": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"inject_agent": &schema.Schema{
+			"inject_agent": {
 				Type:     schema.TypeBool,
 				Default:  true,
 				Optional: true,
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -146,17 +146,17 @@ func resourceVM() *schema.Resource {
 					},
 				},
 			},
-			"cloudinit_enabled": &schema.Schema{
+			"cloudinit_enabled": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
-			"cloudinit_userdata": &schema.Schema{
+			"cloudinit_userdata": {
 				Type:     schema.TypeString,
 				Default:  "",
 				Optional: true,
 			},
-			"cloudinit_networkconfig": &schema.Schema{
+			"cloudinit_networkconfig": {
 				Type:     schema.TypeString,
 				Default:  "",
 				Optional: true,

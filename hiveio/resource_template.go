@@ -20,45 +20,45 @@ func resourceTemplate() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"cpu": &schema.Schema{
+			"cpu": {
 				Type:     schema.TypeInt,
 				Default:  2,
 				Optional: true,
 			},
-			"mem": &schema.Schema{
+			"mem": {
 				Type:     schema.TypeInt,
 				Default:  2048,
 				Optional: true,
 			},
-			"firmware": &schema.Schema{
+			"firmware": {
 				Type:     schema.TypeString,
 				Default:  "uefi",
 				Optional: true,
 			},
-			"display_driver": &schema.Schema{
+			"display_driver": {
 				Type:     schema.TypeString,
 				Default:  "cirrus",
 				Optional: true,
 			},
-			"os": &schema.Schema{
+			"os": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"manual_agent_install": &schema.Schema{
+			"manual_agent_install": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"state_message": &schema.Schema{
+			"state_message": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

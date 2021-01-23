@@ -20,36 +20,36 @@ func resourceHost() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"ip_address": &schema.Schema{
+			"ip_address": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"hostname": &schema.Schema{
+			"hostname": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:        schema.TypeString,
 				Description: "username",
 				Default:     "admin",
 				Optional:    true,
 			},
-			"cluster_id": &schema.Schema{
+			"cluster_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"password": &schema.Schema{
+			"password": {
 				Type:        schema.TypeString,
 				Description: "password",
 				Required:    true,
 				Sensitive:   true,
 			},
-			"gateway_only": &schema.Schema{
+			"gateway_only": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
-			"hostid": &schema.Schema{
+			"hostid": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

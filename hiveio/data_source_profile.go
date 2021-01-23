@@ -12,15 +12,15 @@ func dataSourceProfile() *schema.Resource {
 		Read: dataSourceProfileRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"timezone": &schema.Schema{
+			"timezone": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

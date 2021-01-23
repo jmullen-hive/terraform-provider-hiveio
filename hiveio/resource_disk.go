@@ -21,44 +21,44 @@ func resourceDisk() *schema.Resource {
 			Create: schema.DefaultTimeout(20 * time.Minute),
 		},
 		Schema: map[string]*schema.Schema{
-			"filename": &schema.Schema{
+			"filename": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"storage_pool": &schema.Schema{
+			"storage_pool": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"size": &schema.Schema{
+			"size": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  30,
 				ForceNew: true,
 			},
-			"format": &schema.Schema{
+			"format": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "qcow2",
 				ForceNew: true,
 			},
-			"src_storage": &schema.Schema{
+			"src_storage": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"src_filename": &schema.Schema{
+			"src_filename": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"src_url": &schema.Schema{
+			"src_url": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"local_file": &schema.Schema{
+			"local_file": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,

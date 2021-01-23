@@ -18,19 +18,19 @@ func resourceRealm() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"fqdn": &schema.Schema{
+			"fqdn": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"verified": &schema.Schema{
+			"verified": {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
@@ -41,12 +41,12 @@ func resourceRealm() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:        schema.TypeString,
 				Description: "Service Account username",
 				Optional:    true,
 			},
-			"password": &schema.Schema{
+			"password": {
 				Type:        schema.TypeString,
 				Description: "Service Account password",
 				Optional:    true,
