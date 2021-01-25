@@ -7,13 +7,15 @@ require (
 	github.com/eventials/go-tus v0.0.0-20200718001131-45c7ec8f5d59 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/google/go-cmp v0.5.1 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-hclog v0.11.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
+	github.com/hashicorp/terraform v0.12.9
 	github.com/hashicorp/terraform-plugin-docs v0.3.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.0.4
 	github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d // indirect
-	github.com/hive-io/hive-go-client v0.0.0-20200801012352-1abe08388839
+	github.com/hive-io/hive-go-client v0.0.0-20210124204630-342175c3f70a
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
