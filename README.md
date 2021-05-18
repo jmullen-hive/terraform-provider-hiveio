@@ -1,12 +1,7 @@
 # HiveIO Terraform
 
-Terraform provider plugin for hiveio
+Terraform provider for hive fabric
 
-## Go Install
-
-```
-go install github.com/hive-io/terraform-provider-hiveio
-```
 ## Host Settings
 provider settings can be read from environment variables or stored in tf files
 ```bash
