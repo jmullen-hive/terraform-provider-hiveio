@@ -70,10 +70,6 @@ func resourceGuestPool() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"storage_type": {
 				Type:     schema.TypeString,
 				Default:  "disk",
@@ -242,7 +238,6 @@ func resourceGuestPoolRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("template", pool.GuestProfile.TemplateName)
 	d.Set("profile", pool.ProfileID)
 	d.Set("seed", pool.Seed)
-	d.Set("state", pool.State)
 	d.Set("storage_type", pool.StorageType)
 	d.Set("storage_id", pool.StorageID)
 	d.Set("density.0", pool.Density[0])

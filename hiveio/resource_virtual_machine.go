@@ -61,10 +61,6 @@ func resourceVM() *schema.Resource {
 				Default:  true,
 				Optional: true,
 			},
-			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"disk": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -314,7 +310,6 @@ func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("memory", pool.GuestProfile.Mem[0])
 	d.Set("gpu", pool.GuestProfile.Gpu)
 	d.Set("inject_agent", pool.InjectAgent)
-	d.Set("state", pool.State)
 	d.Set("os", pool.GuestProfile.OS)
 	d.Set("firmware", pool.GuestProfile.Firmware)
 	d.Set("display_driver", pool.GuestProfile.Vga)

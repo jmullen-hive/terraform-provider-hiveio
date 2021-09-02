@@ -85,7 +85,6 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 	} else if err != nil {
 		return err
 	}
-	d.SetId(user.ID)
 	if user.Username != "" {
 		d.Set("username", user.Username)
 	} else if user.GroupName != "" {

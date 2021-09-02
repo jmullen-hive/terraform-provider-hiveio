@@ -65,7 +65,7 @@ func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
 	task = task.WaitForTask(client, false)
 	hostid := task.Ref.Host
 	if task.State == "failed" {
-		return fmt.Errorf("Failed to Create disk: %s", task.Message)
+		return fmt.Errorf("Failed to Add Host: %s", task.Message)
 	}
 	host, err := client.GetHost(hostid)
 	if err != nil {
