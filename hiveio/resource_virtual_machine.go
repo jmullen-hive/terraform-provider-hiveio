@@ -237,15 +237,15 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 		pool.Backup = &backup
 	}
 
+	var affinity rest.PoolAffinity
 	if allowedHosts, ok := d.GetOk("allowed_hosts"); ok {
-		var affinity rest.PoolAffinity
 		hosts := make([]string, len(allowedHosts.([]interface{})))
 		for i, host := range allowedHosts.([]interface{}) {
 			hosts[i] = host.(string)
 		}
 		affinity.AllowedHostIDs = hosts
-		pool.PoolAffinity = &affinity
 	}
+	pool.PoolAffinity = &affinity
 
 	return &pool
 }

@@ -113,7 +113,10 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	if task == nil {
 		return fmt.Errorf("Failed to create disk: Task was not returned")
 	}
-	task = task.WaitForTask(client, false)
+	task, err = task.WaitForTask(client, false)
+	if err != nil {
+		return err
+	}
 	if task.State == "failed" {
 		return fmt.Errorf("Failed to Create disk: %s", task.Message)
 	}
@@ -127,7 +130,10 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		task = task.WaitForTask(client, false)
+		task, err = task.WaitForTask(client, false)
+		if err != nil {
+			return err
+		}
 		if task.State == "failed" {
 			return fmt.Errorf("Failed to resize disk: %s", task.Message)
 		}

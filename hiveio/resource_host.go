@@ -62,7 +62,10 @@ func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	task = task.WaitForTask(client, false)
+	task, err = task.WaitForTask(client, false)
+	if err != nil {
+		return err
+	}
 	hostid := task.Ref.Host
 	if task.State == "failed" {
 		return fmt.Errorf("Failed to Add Host: %s", task.Message)
@@ -79,7 +82,10 @@ func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	task = task.WaitForTask(client, false)
+	task, err = task.WaitForTask(client, false)
+	if err != nil {
+		return err
+	}
 	if task.State == "failed" {
 		return fmt.Errorf("Failed to set host state: %s", task.Message)
 	}
@@ -125,7 +131,10 @@ func resourceHostDelete(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		task = task.WaitForTask(client, false)
+		task, err = task.WaitForTask(client, false)
+		if err != nil {
+			return err
+		}
 		if task.State == "failed" {
 			return fmt.Errorf("Failed to enter maintenance mode: %s", task.Message)
 		}
