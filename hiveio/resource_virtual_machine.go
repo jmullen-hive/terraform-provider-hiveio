@@ -237,16 +237,16 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 		pool.Backup = &backup
 	}
 
-	var affinity rest.PoolAffinity
+	pool.PoolAffinity = &rest.PoolAffinity{}
 	if allowedHosts, ok := d.GetOk("allowed_hosts"); ok {
 		hosts := make([]string, len(allowedHosts.([]interface{})))
 		for i, host := range allowedHosts.([]interface{}) {
 			hosts[i] = host.(string)
 		}
-		affinity.AllowedHostIDs = hosts
+		pool.PoolAffinity.AllowedHostIDs = hosts
+	} else {
+		pool.PoolAffinity.AllowedHostIDs = []string{}
 	}
-	pool.PoolAffinity = &affinity
-
 	return &pool
 }
 
@@ -365,6 +365,9 @@ func resourceVMDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	err = pool.Delete(client)
+	if err != nil {
+		return err
+	}
 	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		pool, err := client.GetPool(d.Id())
 		if err == nil && pool.State == "deleting" {

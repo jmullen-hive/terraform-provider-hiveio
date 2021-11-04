@@ -170,15 +170,16 @@ func poolFromResource(d *schema.ResourceData) *rest.Pool {
 		pool.Backup = &backup
 	}
 
-	var affinity rest.PoolAffinity
+	pool.PoolAffinity = &rest.PoolAffinity{}
 	if allowedHosts, ok := d.GetOk("allowed_hosts"); ok {
 		hosts := make([]string, len(allowedHosts.([]interface{})))
 		for i, host := range allowedHosts.([]interface{}) {
 			hosts[i] = host.(string)
 		}
-		affinity.AllowedHostIDs = hosts
+		pool.PoolAffinity.AllowedHostIDs = hosts
+	} else {
+		pool.PoolAffinity.AllowedHostIDs = []string{}
 	}
-	pool.PoolAffinity = &affinity
 
 	if d.Id() != "" {
 		pool.ID = d.Id()
