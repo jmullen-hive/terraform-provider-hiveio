@@ -10,6 +10,8 @@ import (
 	"github.com/hive-io/hive-go-client/rest"
 )
 
+var storage_pool_name = "HF_Shared"
+
 func resourceSharedStorage() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSharedStorageCreate,
@@ -35,8 +37,22 @@ func resourceSharedStorage() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "name",
+				Description: "storage pool name",
 				Computed:    true,
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Description: "storage pool type",
+				Computed:    true,
+			},
+			"hosts": {
+				Type:        schema.TypeList,
+				Description: "helper field to add a dependency on hosts which are added to the cluster at the same time",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				ForceNew: true,
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
@@ -47,12 +63,6 @@ func resourceSharedStorage() *schema.Resource {
 
 func resourceSharedStorageCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-
-	// roles := []string{}
-	// for _, value := range d.Get("roles").([]interface{}) {
-	// 	roles = append(roles, value.(string))
-	// }
-	// storage.Roles = roles
 	setSize := d.Get("minimum_set_size").(int)
 	utilization := d.Get("utilization").(int)
 	clusterID, err := client.ClusterID()
@@ -63,39 +73,60 @@ func resourceSharedStorageCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	task, err := cluster.EnableSharedStorage(client, utilization, setSize)
+	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		task, err := cluster.EnableSharedStorage(client, utilization, setSize)
+		if err != nil && strings.Contains(err.Error(), "Not enough hosts") {
+			//waitForMinimumHosts(client, clusterID, setSize, 30*time.Second)
+			time.Sleep(15 * time.Second)
+			return resource.RetryableError(fmt.Errorf("not enough hosts"))
+		}
+		task, err = task.WaitForTask(client, false)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if task.State == "failed" {
+			return resource.NonRetryableError(fmt.Errorf("failed to Enable Shared storage: %s", task.Message))
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-	task, err = task.WaitForTask(client, false)
+	cluster, err = client.GetCluster(clusterID)
 	if err != nil {
 		return err
 	}
-	if task.State == "failed" {
-		return fmt.Errorf("failed to Enable Shared storage: %s", task.Message)
-	}
-	storage, err := client.GetStoragePoolByName("HF_Shared")
+	storage, err := client.GetStoragePool(cluster.SharedStorage.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("storage pool not found in database")
 	}
 	d.SetId(storage.ID)
-	d.Set("name", "HF_Shared")
+	d.Set("name", storage.Name)
+	d.Set("type", storage.Type)
 	return resourceSharedStorageRead(d, m)
 }
 
 func resourceSharedStorageRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*rest.Client)
-	var storage *rest.StoragePool
-	var err error
-	storage, err = client.GetStoragePool(d.Id())
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
+	clusterID, err := client.ClusterID()
+	if err != nil {
+		return err
+	}
+	cluster, err := client.GetCluster(clusterID)
+	if err != nil {
+		return err
+	}
+	if cluster.SharedStorage == nil || cluster.SharedStorage.ID == "" {
 		d.SetId("")
 		return nil
-	} else if err != nil {
+	}
+	storage, err := client.GetStoragePool(cluster.SharedStorage.ID)
+	if err != nil {
 		return err
 	}
 	d.SetId(storage.ID)
 	d.Set("name", storage.Name)
+	d.Set("type", storage.Type)
 	return nil
 }
 

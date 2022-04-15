@@ -51,6 +51,11 @@ func resourceHost() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"license": {
+				Type:        schema.TypeString,
+				Description: "unused field to add a license as a dependency",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -104,7 +109,7 @@ func resourceHostRead(d *schema.ResourceData, m interface{}) error {
 	} else if err != nil {
 		return err
 	}
-	d.Set("gateway_only", host.State == "gateway")
+	d.Set("gateway_only", host.Appliance.Role == "gateway")
 	d.Set("hostname", host.Hostname)
 	d.Set("hostid", d.Id())
 	return nil
