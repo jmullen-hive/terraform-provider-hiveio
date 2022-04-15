@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_template`
+# hiveio_template (Resource)
 
 
 
@@ -61,43 +61,43 @@ resource "hiveio_template" "ubuntu_server" {
 
 ### Required
 
-- **name** (String)
-- **os** (String)
+- `name` (String)
+- `os` (String)
 
 ### Optional
 
-- **cpu** (Number) Defaults to `2`.
-- **disk** (Block List) (see [below for nested schema](#nestedblock--disk))
-- **display_driver** (String) Defaults to `cirrus`.
-- **firmware** (String) Defaults to `uefi`.
-- **id** (String) The ID of this resource.
-- **interface** (Block List) (see [below for nested schema](#nestedblock--interface))
-- **manual_agent_install** (Boolean) Defaults to `false`.
-- **mem** (Number) Defaults to `2048`.
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `cpu` (Number) Defaults to `2`.
+- `disk` (Block List) (see [below for nested schema](#nestedblock--disk))
+- `display_driver` (String) Defaults to `cirrus`.
+- `firmware` (String) Defaults to `uefi`.
+- `id` (String) The ID of this resource.
+- `interface` (Block List) (see [below for nested schema](#nestedblock--interface))
+- `manual_agent_install` (Boolean) Defaults to `false`.
+- `mem` (Number) Defaults to `2048`.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
-### Read-only
+### Read-Only
 
-- **state** (String)
-- **state_message** (String)
+- `state` (String)
+- `state_message` (String)
 
 <a id="nestedblock--disk"></a>
 ### Nested Schema for `disk`
 
 Required:
 
-- **filename** (String)
-- **storage_id** (String)
+- `filename` (String)
+- `storage_id` (String)
 
 Optional:
 
-- **disk_driver** (String) Defaults to `virtio`.
-- **format** (String) Defaults to `qcow2`.
-- **type** (String) Defaults to `Disk`.
+- `disk_driver` (String) Defaults to `virtio`.
+- `format` (String) Defaults to `qcow2`.
+- `type` (String) Defaults to `Disk`.
 
-Read-only:
+Read-Only:
 
-- **size** (String)
+- `size` (String)
 
 
 <a id="nestedblock--interface"></a>
@@ -105,12 +105,12 @@ Read-only:
 
 Required:
 
-- **network** (String)
-- **vlan** (Number)
+- `network` (String)
+- `vlan` (Number)
 
 Optional:
 
-- **emulation** (String) Defaults to `virtio`.
+- `emulation` (String) Defaults to `virtio`.
 
 
 <a id="nestedblock--timeouts"></a>
@@ -118,6 +118,6 @@ Optional:
 
 Optional:
 
-- **read** (String)
+- `read` (String)
 
 

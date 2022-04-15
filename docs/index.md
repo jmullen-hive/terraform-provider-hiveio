@@ -26,12 +26,12 @@ provider "hiveio" {
 
 ### Required
 
-- **password** (String, Sensitive) The password to use for connection to the server.
+- `password` (String, Sensitive) The password to use for connection to the server.
 
 ### Optional
 
-- **host** (String) hostname or ip address of the server.
-- **insecure** (Boolean) Ignore SSL certificate errors. Defaults to `false`.
-- **port** (Number) The port to use to connect to the server. Defaults to 8443
-- **realm** (String, Sensitive) The realm to use to connect to the server. Defaults to local
-- **username** (String) The username to connect to the server. Defaults to admin
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin

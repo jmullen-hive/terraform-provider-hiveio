@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_virtual_machine`
+# hiveio_virtual_machine (Resource)
 
 
 
@@ -45,39 +45,35 @@ resource "hiveio_virtual_machine" "win10" {
 
 ### Required
 
-- **cpu** (Number)
-- **memory** (Number)
-- **name** (String)
-- **os** (String)
+- `cpu` (Number)
+- `memory` (Number)
+- `name` (String)
+- `os` (String)
 
 ### Optional
 
-- **allowed_hosts** (List of String)
-- **backup** (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
-- **cloudinit_enabled** (Boolean) Defaults to `false`.
-- **cloudinit_networkconfig** (String) Defaults to ``.
-- **cloudinit_userdata** (String) Defaults to ``.
-- **disk** (Block List) (see [below for nested schema](#nestedblock--disk))
-- **display_driver** (String) Defaults to `cirrus`.
-- **firmware** (String) Defaults to `uefi`.
-- **gpu** (Boolean) Defaults to `false`.
-- **id** (String) The ID of this resource.
-- **inject_agent** (Boolean) Defaults to `true`.
-- **interface** (Block List) (see [below for nested schema](#nestedblock--interface))
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-
-### Read-only
-
-- **state** (String)
+- `allowed_hosts` (List of String)
+- `backup` (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
+- `cloudinit_enabled` (Boolean) Defaults to `false`.
+- `cloudinit_networkconfig` (String) Defaults to ``.
+- `cloudinit_userdata` (String) Defaults to ``.
+- `disk` (Block List) (see [below for nested schema](#nestedblock--disk))
+- `display_driver` (String) Defaults to `cirrus`.
+- `firmware` (String) Defaults to `uefi`.
+- `gpu` (Boolean) Defaults to `false`.
+- `id` (String) The ID of this resource.
+- `inject_agent` (Boolean) Defaults to `true`.
+- `interface` (Block List) (see [below for nested schema](#nestedblock--interface))
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 <a id="nestedblock--backup"></a>
 ### Nested Schema for `backup`
 
 Required:
 
-- **enabled** (Boolean)
-- **frequency** (String)
-- **target** (String)
+- `enabled` (Boolean)
+- `frequency` (String)
+- `target` (String)
 
 
 <a id="nestedblock--disk"></a>
@@ -85,18 +81,18 @@ Required:
 
 Required:
 
-- **filename** (String)
-- **storage_id** (String)
+- `filename` (String)
+- `storage_id` (String)
 
 Optional:
 
-- **disk_driver** (String) Defaults to `virtio`.
-- **format** (String) Defaults to `qcow2`.
-- **type** (String) Defaults to `Disk`.
+- `disk_driver` (String) Defaults to `virtio`.
+- `format` (String) Defaults to `qcow2`.
+- `type` (String) Defaults to `Disk`.
 
-Read-only:
+Read-Only:
 
-- **size** (String)
+- `size` (String)
 
 
 <a id="nestedblock--interface"></a>
@@ -104,12 +100,12 @@ Read-only:
 
 Required:
 
-- **network** (String)
-- **vlan** (Number)
+- `network` (String)
+- `vlan` (Number)
 
 Optional:
 
-- **emulation** (String) Defaults to `virtio`.
+- `emulation` (String) Defaults to `virtio`.
 
 
 <a id="nestedblock--timeouts"></a>
@@ -117,7 +113,7 @@ Optional:
 
 Optional:
 
-- **create** (String)
-- **delete** (String)
+- `create` (String)
+- `delete` (String)
 
 

@@ -6,7 +6,7 @@ description: |-
   The storage pool data source can be used to retrieve settings from an existing storage pool
 ---
 
-# Data Source `hiveio_storage_pool`
+# hiveio_storage_pool (Data Source)
 
 The storage pool data source can be used to retrieve settings from an existing storage pool
 
@@ -17,16 +17,16 @@ The storage pool data source can be used to retrieve settings from an existing s
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **mount_options** (List of String)
-- **name** (String)
-- **username** (String)
+- `id` (String) The ID of this resource.
+- `mount_options` (List of String)
+- `name` (String)
+- `username` (String)
 
-### Read-only
+### Read-Only
 
-- **path** (String)
-- **roles** (List of String)
-- **server** (String)
-- **type** (String)
+- `path` (String)
+- `roles` (List of String)
+- `server` (String)
+- `type` (String)
 
 

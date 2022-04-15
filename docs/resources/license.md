@@ -6,7 +6,7 @@ description: |-
   Add a license for a new cluster
 ---
 
-# Resource `hiveio_license`
+# hiveio_license (Resource)
 
 Add a license for a new cluster
 
@@ -17,10 +17,16 @@ Add a license for a new cluster
 
 ### Required
 
-- **license** (String)
+- `license` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
+
+### Read-Only
+
+- `expiration` (String)
+- `max_guests` (Number)
+- `type` (String)
 
 

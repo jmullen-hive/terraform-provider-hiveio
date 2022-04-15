@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_profile`
+# hiveio_profile (Resource)
 
 
 
@@ -61,30 +61,30 @@ resource "hiveio_profile" "test" {
 
 ### Required
 
-- **name** (String)
+- `name` (String)
 
 ### Optional
 
-- **ad_config** (Block List, Max: 1) active directory options (see [below for nested schema](#nestedblock--ad_config))
-- **backup** (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
-- **broker_options** (Block List, Max: 1) (see [below for nested schema](#nestedblock--broker_options))
-- **id** (String) The ID of this resource.
-- **timezone** (String) A timezone to inject to guests in the profile. Defaults to `disabled`.
-- **user_volumes** (Block List, Max: 1) User Volume options. (see [below for nested schema](#nestedblock--user_volumes))
+- `ad_config` (Block List, Max: 1) active directory options (see [below for nested schema](#nestedblock--ad_config))
+- `backup` (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
+- `broker_options` (Block List, Max: 1) (see [below for nested schema](#nestedblock--broker_options))
+- `id` (String) The ID of this resource.
+- `timezone` (String) A timezone to inject to guests in the profile. Defaults to `disabled`.
+- `user_volumes` (Block List, Max: 1) User Volume options. (see [below for nested schema](#nestedblock--user_volumes))
 
 <a id="nestedblock--ad_config"></a>
 ### Nested Schema for `ad_config`
 
 Required:
 
-- **domain** (String) The realm name to use for guests in this profile.
-- **user_group** (String) AD group for users who can login through the broker.
+- `domain` (String) The realm name to use for guests in this profile.
+- `user_group` (String) AD group for users who can login through the broker.
 
 Optional:
 
-- **ou** (String) OU for guests using this profile.
-- **password** (String, Sensitive) Password for the service account.
-- **username** (String) Username for a service account to override the one in realm.
+- `ou` (String) OU for guests using this profile.
+- `password` (String, Sensitive) Password for the service account.
+- `username` (String) Username for a service account to override the one in realm.
 
 
 <a id="nestedblock--backup"></a>
@@ -92,12 +92,12 @@ Optional:
 
 Required:
 
-- **enabled** (Boolean)
-- **frequency** (String)
+- `enabled` (Boolean)
+- `frequency` (String)
 
 Optional:
 
-- **target** (String)
+- `target` (String)
 
 
 <a id="nestedblock--broker_options"></a>
@@ -105,25 +105,25 @@ Optional:
 
 Optional:
 
-- **allow_desktop_composition** (Boolean) Defaults to `true`.
-- **audio_capture** (Boolean) Defaults to `true`.
-- **credssp** (Boolean) Defaults to `true`.
-- **disable_full_window_drag** (Boolean) Defaults to `false`.
-- **disable_menu_anims** (Boolean) Defaults to `false`.
-- **disable_printer** (Boolean) Defaults to `false`.
-- **disable_themes** (Boolean) Defaults to `false`.
-- **disable_wallpaper** (Boolean) Defaults to `false`.
-- **fail_on_cert_mismatch** (Boolean) Defaults to `true`.
-- **hide_authentication_failure** (Boolean) Defaults to `false`.
-- **html5** (Boolean) Defaults to `true`.
-- **inject_password** (Boolean) Defaults to `false`.
-- **redirect_clipboard** (Boolean) Defaults to `true`.
-- **redirect_disk** (Boolean) Defaults to `true`.
-- **redirect_pnp** (Boolean) Defaults to `true`.
-- **redirect_printer** (Boolean) Defaults to `true`.
-- **redirect_smartcard** (Boolean) Defaults to `false`.
-- **redirect_usb** (Boolean) Defaults to `false`.
-- **smart_resize** (Boolean) Defaults to `true`.
+- `allow_desktop_composition` (Boolean) Defaults to `true`.
+- `audio_capture` (Boolean) Defaults to `true`.
+- `credssp` (Boolean) Defaults to `true`.
+- `disable_full_window_drag` (Boolean) Defaults to `false`.
+- `disable_menu_anims` (Boolean) Defaults to `false`.
+- `disable_printer` (Boolean) Defaults to `false`.
+- `disable_themes` (Boolean) Defaults to `false`.
+- `disable_wallpaper` (Boolean) Defaults to `false`.
+- `fail_on_cert_mismatch` (Boolean) Defaults to `true`.
+- `hide_authentication_failure` (Boolean) Defaults to `false`.
+- `html5` (Boolean) Defaults to `true`.
+- `inject_password` (Boolean) Defaults to `false`.
+- `redirect_clipboard` (Boolean) Defaults to `true`.
+- `redirect_disk` (Boolean) Defaults to `true`.
+- `redirect_pnp` (Boolean) Defaults to `true`.
+- `redirect_printer` (Boolean) Defaults to `true`.
+- `redirect_smartcard` (Boolean) Defaults to `false`.
+- `redirect_usb` (Boolean) Defaults to `false`.
+- `smart_resize` (Boolean) Defaults to `true`.
 
 
 <a id="nestedblock--user_volumes"></a>
@@ -131,12 +131,12 @@ Optional:
 
 Required:
 
-- **repository** (String)
-- **size** (Number, Sensitive)
+- `repository` (String)
+- `size` (Number, Sensitive)
 
 Optional:
 
-- **backup_schedule** (Number)
-- **target** (String)
+- `backup_schedule` (Number)
+- `target` (String)
 
 

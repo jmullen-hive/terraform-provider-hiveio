@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_storage_pool`
+# hiveio_storage_pool (Resource)
 
 
 
@@ -79,30 +79,30 @@ resource "hiveio_storage_pool" "azure" {
 
 ### Required
 
-- **name** (String)
-- **roles** (List of String)
-- **type** (String)
+- `name` (String)
+- `roles` (List of String)
+- `type` (String)
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **key** (String, Sensitive)
-- **mount_options** (List of String)
-- **password** (String, Sensitive)
-- **path** (String)
-- **s3_access_key_id** (String)
-- **s3_region** (String)
-- **s3_secret_access_key** (String, Sensitive)
-- **server** (String)
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- **url** (String)
-- **username** (String)
+- `id` (String) The ID of this resource.
+- `key` (String, Sensitive)
+- `mount_options` (List of String)
+- `password` (String, Sensitive)
+- `path` (String)
+- `s3_access_key_id` (String)
+- `s3_region` (String)
+- `s3_secret_access_key` (String, Sensitive)
+- `server` (String)
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `url` (String)
+- `username` (String)
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
 Optional:
 
-- **delete** (String)
+- `delete` (String)
 
 

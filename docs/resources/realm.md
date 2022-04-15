@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_realm`
+# hiveio_realm (Resource)
 
 
 
@@ -29,16 +29,16 @@ resource "hiveio_realm" "home" {
 
 ### Required
 
-- **fqdn** (String) fully qualified domain nam
-- **name** (String) netbios name
+- `fqdn` (String) fully qualified domain nam
+- `name` (String) netbios name
 
 ### Optional
 
-- **enabled** (Boolean)
-- **id** (String) The ID of this resource.
-- **password** (String, Sensitive) Service Account password
-- **tags** (List of String)
-- **username** (String) Service Account username
-- **verified** (Boolean)
+- `enabled` (Boolean)
+- `id` (String) The ID of this resource.
+- `password` (String, Sensitive) Service Account password
+- `tags` (List of String)
+- `username` (String) Service Account username
+- `verified` (Boolean)
 
 

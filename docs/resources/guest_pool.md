@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_guest_pool`
+# hiveio_guest_pool (Resource)
 
 
 
@@ -52,40 +52,36 @@ resource "hiveio_guest_pool" "ubuntu_pool" {
 
 ### Required
 
-- **density** (List of Number)
-- **name** (String)
-- **profile** (String)
-- **seed** (String)
-- **template** (String)
+- `density` (List of Number)
+- `name` (String)
+- `profile` (String)
+- `seed` (String)
+- `template` (String)
 
 ### Optional
 
-- **allowed_hosts** (List of String)
-- **backup** (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
-- **cloudinit_enabled** (Boolean) Defaults to `false`.
-- **cloudinit_userdata** (String) Defaults to ``.
-- **cpu** (Number)
-- **gpu** (Boolean) Defaults to `false`.
-- **id** (String) The ID of this resource.
-- **memory** (Number)
-- **persistent** (Boolean) Defaults to `false`.
-- **storage_id** (String) Defaults to `disk`.
-- **storage_type** (String) Defaults to `disk`.
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- **wait_for_build** (Boolean) Defaults to `false`.
-
-### Read-only
-
-- **state** (String)
+- `allowed_hosts` (List of String)
+- `backup` (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
+- `cloudinit_enabled` (Boolean) Defaults to `false`.
+- `cloudinit_userdata` (String) Defaults to ``.
+- `cpu` (Number)
+- `gpu` (Boolean) Defaults to `false`.
+- `id` (String) The ID of this resource.
+- `memory` (Number)
+- `persistent` (Boolean) Defaults to `false`.
+- `storage_id` (String) Defaults to `disk`.
+- `storage_type` (String) Defaults to `disk`.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `wait_for_build` (Boolean) Defaults to `false`.
 
 <a id="nestedblock--backup"></a>
 ### Nested Schema for `backup`
 
 Required:
 
-- **enabled** (Boolean)
-- **frequency** (String)
-- **target** (String)
+- `enabled` (Boolean)
+- `frequency` (String)
+- `target` (String)
 
 
 <a id="nestedblock--timeouts"></a>
@@ -93,6 +89,6 @@ Required:
 
 Optional:
 
-- **delete** (String)
+- `delete` (String)
 
 

@@ -6,7 +6,7 @@ description: |-
   This resource can be used to add an external guest for access through the broker.
 ---
 
-# Resource `hiveio_external_guest`
+# hiveio_external_guest (Resource)
 
 This resource can be used to add an external guest for access through the broker.
 
@@ -34,22 +34,22 @@ resource "hiveio_external_guest" "desktop" {
 
 ### Required
 
-- **address** (String) Hostname or ip address
-- **name** (String)
-- **realm** (String) The realm of the user
-- **username** (String) The user the guest will be assigned to
+- `address` (String) Hostname or ip address
+- `name` (String)
+- `realm` (String) The realm of the user
+- `username` (String) The user the guest will be assigned to
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **os** (String)
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `id` (String) The ID of this resource.
+- `os` (String)
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
 Optional:
 
-- **delete** (String)
+- `delete` (String)
 
 

@@ -24,6 +24,7 @@ resource "hiveio_shared_storage" "shared" {
 
 ### Optional
 
+- `hosts` (List of String) helper field to add a dependency on hosts which are added to the cluster at the same time
 - `id` (String) The ID of this resource.
 - `minimum_set_size` (Number) minimum number of hosts required to increase shared storage Defaults to `3`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -31,7 +32,8 @@ resource "hiveio_shared_storage" "shared" {
 
 ### Read-Only
 
-- `name` (String) name
+- `name` (String) storage pool name
+- `type` (String) storage pool type
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

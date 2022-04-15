@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_host`
+# hiveio_host (Resource)
 
 
 
@@ -29,19 +29,20 @@ resource "hiveio_host" "host" {
 
 ### Required
 
-- **ip_address** (String)
-- **password** (String, Sensitive)
+- `ip_address` (String)
+- `password` (String, Sensitive)
 
 ### Optional
 
-- **gateway_only** (Boolean) Defaults to `false`.
-- **id** (String) The ID of this resource.
-- **username** (String) Defaults to `admin`.
+- `gateway_only` (Boolean) Defaults to `false`.
+- `id` (String) The ID of this resource.
+- `license` (String) unused field to add a license as a dependency
+- `username` (String) Defaults to `admin`.
 
-### Read-only
+### Read-Only
 
-- **cluster_id** (String)
-- **hostid** (String)
-- **hostname** (String)
+- `cluster_id` (String)
+- `hostid` (String)
+- `hostname` (String)
 
 

@@ -6,7 +6,7 @@ description: |-
   A data source to retrieve host information by ip or hostname.
 ---
 
-# Data Source `hiveio_host`
+# hiveio_host (Data Source)
 
 A data source to retrieve host information by ip or hostname.
 
@@ -17,14 +17,14 @@ A data source to retrieve host information by ip or hostname.
 
 ### Optional
 
-- **hostname** (String)
-- **id** (String) The ID of this resource.
-- **ip_address** (String)
+- `hostname` (String)
+- `id` (String) The ID of this resource.
+- `ip_address` (String)
 
-### Read-only
+### Read-Only
 
-- **cluster_id** (String)
-- **hostid** (String)
-- **software_version** (String)
+- `cluster_id` (String)
+- `hostid` (String)
+- `software_version` (String)
 
 

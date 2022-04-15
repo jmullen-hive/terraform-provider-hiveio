@@ -6,7 +6,7 @@ description: |-
   Add a ldap user or group with admin or readonly access.
 ---
 
-# Resource `hiveio_user`
+# hiveio_user (Resource)
 
 Add a ldap user or group with admin or readonly access.
 
@@ -17,13 +17,13 @@ Add a ldap user or group with admin or readonly access.
 
 ### Required
 
-- **realm** (String)
-- **role** (String) readonly or admin
+- `realm` (String)
+- `role` (String) readonly or admin
 
 ### Optional
 
-- **groupname** (String)
-- **id** (String) The ID of this resource.
-- **username** (String)
+- `groupname` (String)
+- `id` (String) The ID of this resource.
+- `username` (String)
 
 

@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Resource `hiveio_disk`
+# hiveio_disk (Resource)
 
 
 
@@ -49,25 +49,25 @@ resource "hiveio_disk" "upload-test" {
 
 ### Required
 
-- **filename** (String)
-- **storage_pool** (String) The storage id for where to store the disk.
+- `filename` (String)
+- `storage_pool` (String) The storage id for where to store the disk.
 
 ### Optional
 
-- **format** (String) File format (qcow2 or raw) Defaults to `qcow2`.
-- **id** (String) The ID of this resource.
-- **local_file** (String) A local file to upload to the storage pool.
-- **size** (Number) Size of the disk in GB Defaults to `30`.
-- **src_filename** (String) The filename of an existing disk to copy.
-- **src_storage** (String) The storage pool id of an existing disk to copy.
-- **src_url** (String) HTTP url for a disk to copy into the storage pool.
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `format` (String) File format (qcow2 or raw) Defaults to `qcow2`.
+- `id` (String) The ID of this resource.
+- `local_file` (String) A local file to upload to the storage pool.
+- `size` (Number) Size of the disk in GB Defaults to `30`.
+- `src_filename` (String) The filename of an existing disk to copy.
+- `src_storage` (String) The storage pool id of an existing disk to copy.
+- `src_url` (String) HTTP url for a disk to copy into the storage pool.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
 Optional:
 
-- **create** (String)
+- `create` (String)
 
 
