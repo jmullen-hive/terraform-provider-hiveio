@@ -1,22 +1,22 @@
 package hiveio
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
-var storage_pool_name = "HF_Shared"
-
 func resourceSharedStorage() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSharedStorageCreate,
-		Read:   resourceSharedStorageRead,
-		Delete: resourceSharedStorageDelete,
+		CreateContext: resourceSharedStorageCreate,
+		ReadContext:   resourceSharedStorageRead,
+		DeleteContext: resourceSharedStorageDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -61,19 +61,19 @@ func resourceSharedStorage() *schema.Resource {
 	}
 }
 
-func resourceSharedStorageCreate(d *schema.ResourceData, m interface{}) error {
+func resourceSharedStorageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	setSize := d.Get("minimum_set_size").(int)
 	utilization := d.Get("utilization").(int)
 	clusterID, err := client.ClusterID()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	cluster, err := client.GetCluster(clusterID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		task, err := cluster.EnableSharedStorage(client, utilization, setSize)
 		if err != nil && strings.Contains(err.Error(), "Not enough hosts") {
 			//waitForMinimumHosts(client, clusterID, setSize, 30*time.Second)
@@ -90,49 +90,49 @@ func resourceSharedStorageCreate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	cluster, err = client.GetCluster(clusterID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	storage, err := client.GetStoragePool(cluster.SharedStorage.ID)
 	if err != nil {
-		return fmt.Errorf("storage pool not found in database")
+		return diag.Errorf("storage pool not found in database")
 	}
 	d.SetId(storage.ID)
 	d.Set("name", storage.Name)
 	d.Set("type", storage.Type)
-	return resourceSharedStorageRead(d, m)
+	return resourceSharedStorageRead(ctx, d, m)
 }
 
-func resourceSharedStorageRead(d *schema.ResourceData, m interface{}) error {
+func resourceSharedStorageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	clusterID, err := client.ClusterID()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	cluster, err := client.GetCluster(clusterID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if cluster.SharedStorage == nil || cluster.SharedStorage.ID == "" {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	}
 	storage, err := client.GetStoragePool(cluster.SharedStorage.ID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(storage.ID)
 	d.Set("name", storage.Name)
 	d.Set("type", storage.Type)
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceSharedStorageDelete(d *schema.ResourceData, m interface{}) error {
+func resourceSharedStorageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
-	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		clusterID, err := client.ClusterID()
 		if err != nil {
 			return resource.NonRetryableError(err)
@@ -154,4 +154,8 @@ func resourceSharedStorageDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

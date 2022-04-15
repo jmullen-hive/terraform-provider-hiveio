@@ -1,21 +1,23 @@
 package hiveio
 
 import (
+	"context"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceExternalGuest() *schema.Resource {
 	return &schema.Resource{
-		Description: "This resource can be used to add an external guest for access through the broker.",
-		Create:      resourceExternalGuestCreate,
-		Read:        resourceExternalGuestRead,
-		Delete:      resourceExternalGuestDelete,
+		Description:   "This resource can be used to add an external guest for access through the broker.",
+		CreateContext: resourceExternalGuestCreate,
+		ReadContext:   resourceExternalGuestRead,
+		DeleteContext: resourceExternalGuestDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -69,26 +71,26 @@ func guestFromResource(d *schema.ResourceData) rest.ExternalGuest {
 	return guest
 }
 
-func resourceExternalGuestCreate(d *schema.ResourceData, m interface{}) error {
+func resourceExternalGuestCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	guest := guestFromResource(d)
 
 	_, err := guest.Create(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(guest.GuestName)
-	return resourceExternalGuestRead(d, m)
+	return resourceExternalGuestRead(ctx, d, m)
 }
 
-func resourceExternalGuestRead(d *schema.ResourceData, m interface{}) error {
+func resourceExternalGuestRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	guest, err := client.GetGuest(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("name", guest.Name)
@@ -97,15 +99,15 @@ func resourceExternalGuestRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("realm", guest.Realm)
 	d.Set("os", guest.Os)
 
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceExternalGuestDelete(d *schema.ResourceData, m interface{}) error {
+func resourceExternalGuestDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	guest, err := client.GetGuest(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	err = guest.Delete(client)
-	return err
+	return diag.FromErr(err)
 }

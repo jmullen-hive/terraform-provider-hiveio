@@ -1,10 +1,12 @@
 package hiveio
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -12,12 +14,12 @@ import (
 
 func resourceGuestPool() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGuestPoolCreate,
-		Read:   resourceGuestPoolRead,
-		Update: resourceGuestPoolUpdate,
-		Delete: resourceGuestPoolDelete,
+		CreateContext: resourceGuestPoolCreate,
+		ReadContext:   resourceGuestPoolRead,
+		UpdateContext: resourceGuestPoolUpdate,
+		DeleteContext: resourceGuestPoolDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(5 * time.Minute),
@@ -188,13 +190,13 @@ func poolFromResource(d *schema.ResourceData) *rest.Pool {
 	return &pool
 }
 
-func resourceGuestPoolCreate(d *schema.ResourceData, m interface{}) error {
+func resourceGuestPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool := poolFromResource(d)
 
 	template, err := client.GetTemplate(pool.GuestProfile.TemplateName)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	pool.GuestProfile.OS = template.OS
 	pool.GuestProfile.Vga = template.DisplayDriver
@@ -207,27 +209,27 @@ func resourceGuestPoolCreate(d *schema.ResourceData, m interface{}) error {
 
 	_, err = pool.Create(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	pool, err = client.GetPoolByName(pool.Name)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if d.Get("wait_for_build").(bool) {
 		pool.WaitForPool(client, "tracking", 60*time.Minute)
 	}
 	d.SetId(pool.ID)
-	return resourceGuestPoolRead(d, m)
+	return resourceGuestPoolRead(ctx, d, m)
 }
 
-func resourceGuestPoolRead(d *schema.ResourceData, m interface{}) error {
+func resourceGuestPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool, err := client.GetPool(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("name", pool.Name)
@@ -256,16 +258,16 @@ func resourceGuestPoolRead(d *schema.ResourceData, m interface{}) error {
 	if pool.PoolAffinity != nil && len(pool.PoolAffinity.AllowedHostIDs) > 0 {
 		d.Set("allowed_hosts", pool.PoolAffinity.AllowedHostIDs)
 	}
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceGuestPoolUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceGuestPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool := poolFromResource(d)
 
 	template, err := client.GetTemplate(pool.GuestProfile.TemplateName)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	pool.GuestProfile.OS = template.OS
 	pool.GuestProfile.Vga = template.DisplayDriver
@@ -277,23 +279,26 @@ func resourceGuestPoolUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	_, err = pool.Update(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceGuestPoolRead(d, m)
+	return resourceGuestPoolRead(ctx, d, m)
 }
 
-func resourceGuestPoolDelete(d *schema.ResourceData, m interface{}) error {
+func resourceGuestPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool, err := client.GetPool(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	err = pool.Delete(client)
-	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		pool, err := client.GetPool(d.Id())
 		if err == nil && pool.State == "deleting" {
 			time.Sleep(5 * time.Second)
-			return resource.RetryableError(fmt.Errorf("Deleting pool %s", d.Id()))
+			return resource.RetryableError(fmt.Errorf("deleting pool %s", d.Id()))
 		}
 		if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 			time.Sleep(5 * time.Second)
@@ -304,4 +309,8 @@ func resourceGuestPoolDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

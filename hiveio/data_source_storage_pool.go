@@ -1,8 +1,9 @@
 package hiveio
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -10,7 +11,7 @@ import (
 func dataSourceStoragePool() *schema.Resource {
 	return &schema.Resource{
 		Description: "The storage pool data source can be used to retrieve settings from an existing storage pool",
-		Read:        dataSourceStoragePoolRead,
+		ReadContext: dataSourceStoragePoolRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,
@@ -54,7 +55,7 @@ func dataSourceStoragePool() *schema.Resource {
 	}
 }
 
-func dataSourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var storage *rest.StoragePool
 	var err error
@@ -66,11 +67,11 @@ func dataSourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 	} else if nameOk {
 		storage, err = client.GetStoragePoolByName(name.(string))
 	} else {
-		return fmt.Errorf("id or name must be provided")
+		return diag.Errorf("id or name must be provided")
 	}
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(storage.ID)
 	d.Set("name", storage.Name)
@@ -79,5 +80,5 @@ func dataSourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("type", storage.Type)
 	d.Set("username", storage.Username)
 	d.Set("roles", storage.Roles)
-	return nil
+	return diag.Diagnostics{}
 }

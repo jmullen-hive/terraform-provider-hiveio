@@ -1,22 +1,24 @@
 package hiveio
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceTemplateCreate,
-		Read:   resourceTemplateRead,
-		Update: resourceTemplateUpdate,
-		Delete: resourceTemplateDelete,
+		CreateContext: resourceTemplateCreate,
+		ReadContext:   resourceTemplateRead,
+		UpdateContext: resourceTemplateUpdate,
+		DeleteContext: resourceTemplateDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -169,25 +171,25 @@ func templateFromResource(d *schema.ResourceData) rest.Template {
 	return template
 }
 
-func resourceTemplateCreate(d *schema.ResourceData, m interface{}) error {
+func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	template := templateFromResource(d)
 	_, err := template.Create(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(template.Name)
-	return resourceTemplateRead(d, m)
+	return resourceTemplateRead(ctx, d, m)
 }
 
-func resourceTemplateRead(d *schema.ResourceData, m interface{}) error {
+func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	template, err := client.GetTemplate(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("name", template.Name)
@@ -214,24 +216,28 @@ func resourceTemplateRead(d *schema.ResourceData, m interface{}) error {
 		d.Set(prefix+"vlan", iface.Vlan)
 	}
 
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceTemplateUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	template := templateFromResource(d)
 	_, err := template.Update(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceTemplateRead(d, m)
+	return resourceTemplateRead(ctx, d, m)
 }
 
-func resourceTemplateDelete(d *schema.ResourceData, m interface{}) error {
+func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	template, err := client.GetTemplate(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return template.Delete(client)
+	err = template.Delete(client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

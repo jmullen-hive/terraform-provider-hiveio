@@ -1,8 +1,9 @@
 package hiveio
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -10,7 +11,7 @@ import (
 func dataSourceProfile() *schema.Resource {
 	return &schema.Resource{
 		Description: "The profile data source can be used to retrieve settings from an existing profile.",
-		Read:        dataSourceProfileRead,
+		ReadContext: dataSourceProfileRead,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -208,7 +209,7 @@ func dataSourceProfile() *schema.Resource {
 	}
 }
 
-func dataSourceProfileRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var profile *rest.Profile
 	var err error
@@ -220,11 +221,11 @@ func dataSourceProfileRead(d *schema.ResourceData, m interface{}) error {
 	} else if nameOk {
 		profile, err = client.GetProfileByName(name.(string))
 	} else {
-		return fmt.Errorf("id or name must be provided")
+		return diag.Errorf("id or name must be provided")
 	}
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(profile.ID)
 	d.Set("name", profile.Name)
@@ -270,5 +271,5 @@ func dataSourceProfileRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("broker_options.0.redirect_usb", profile.BrokerOptions.RedirectUSB)
 		d.Set("broker_options.0.smart_resize", profile.BrokerOptions.SmartResize)
 	}
-	return nil
+	return diag.Diagnostics{}
 }

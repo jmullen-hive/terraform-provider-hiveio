@@ -1,22 +1,23 @@
 package hiveio
 
 import (
-	"fmt"
+	"context"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceHost() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceHostCreate,
-		Read:   resourceHostRead,
-		Update: resourceHostUpdate,
-		Delete: resourceHostDelete,
+		CreateContext: resourceHostCreate,
+		ReadContext:   resourceHostRead,
+		UpdateContext: resourceHostUpdate,
+		DeleteContext: resourceHostDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -60,24 +61,24 @@ func resourceHost() *schema.Resource {
 	}
 }
 
-func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
+func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	ip := d.Get("ip_address").(string)
 	task, err := client.JoinHost(d.Get("username").(string), d.Get("password").(string), ip)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	task, err = task.WaitForTask(client, false)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	hostid := task.Ref.Host
 	if task.State == "failed" {
-		return fmt.Errorf("Failed to Add Host: %s", task.Message)
+		return diag.Errorf("Failed to Add Host: %s", task.Message)
 	}
 	host, err := client.GetHost(hostid)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	state := "available"
 	if d.Get("gateway_only").(bool) {
@@ -85,66 +86,70 @@ func resourceHostCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	task, err = host.SetState(client, state)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	task, err = task.WaitForTask(client, false)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if task.State == "failed" {
-		return fmt.Errorf("Failed to set host state: %s", task.Message)
+		return diag.Errorf("Failed to set host state: %s", task.Message)
 	}
 	d.SetId(host.Hostid)
-	return resourceHostRead(d, m)
+	return resourceHostRead(ctx, d, m)
 }
 
-func resourceHostRead(d *schema.ResourceData, m interface{}) error {
+func resourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var host rest.Host
 	var err error
 	host, err = client.GetHost(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Set("gateway_only", host.Appliance.Role == "gateway")
 	d.Set("hostname", host.Hostname)
 	d.Set("hostid", d.Id())
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceHostUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceHostUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	_, err := client.GetHost(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	//Don't change anything for now
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceHostDelete(d *schema.ResourceData, m interface{}) error {
+func resourceHostDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	host, err := client.GetHost(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if host.State != "maintenance" {
 		task, err := host.SetState(client, "maintenance")
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		task, err = task.WaitForTask(client, false)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if task.State == "failed" {
-			return fmt.Errorf("Failed to enter maintenance mode: %s", task.Message)
+			return diag.Errorf("Failed to enter maintenance mode: %s", task.Message)
 		}
 	}
 	//services might still be restarting from maintenance mode
 	time.Sleep(10 * time.Second)
-	return host.UnjoinCluster(client)
+	err = host.UnjoinCluster(client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

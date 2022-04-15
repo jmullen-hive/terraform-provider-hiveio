@@ -1,10 +1,12 @@
 package hiveio
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -12,12 +14,12 @@ import (
 
 func resourceVM() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVMCreate,
-		Read:   resourceVMRead,
-		Update: resourceVMUpdate,
-		Delete: resourceVMDelete,
+		CreateContext: resourceVMCreate,
+		ReadContext:   resourceVMRead,
+		UpdateContext: resourceVMUpdate,
+		DeleteContext: resourceVMDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -250,27 +252,27 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 	return &pool
 }
 
-func resourceVMCreate(d *schema.ResourceData, m interface{}) error {
+func resourceVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool := vmFromResource(d)
 
 	_, err := pool.Create(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	pool, err = client.GetPoolByName(pool.Name)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	guestName := strings.ToUpper(pool.Name)
 	guestName = strings.ReplaceAll(guestName, " ", "_")
-	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		guest, err := client.GetGuest(guestName)
 		if err != nil {
 			if strings.Contains(err.Error(), "\"error\": 404") {
 				time.Sleep(5 * time.Second)
-				return resource.RetryableError(fmt.Errorf("Building pool %s", pool.ID))
+				return resource.RetryableError(fmt.Errorf("building pool %s", pool.ID))
 			}
 			if err != nil {
 				return resource.NonRetryableError(err)
@@ -289,20 +291,20 @@ func resourceVMCreate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(pool.ID)
-	return resourceVMRead(d, m)
+	return resourceVMRead(ctx, d, m)
 }
 
-func resourceVMRead(d *schema.ResourceData, m interface{}) error {
+func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool, err := client.GetPool(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("name", pool.Name)
@@ -345,34 +347,34 @@ func resourceVMRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("allowed_hosts", pool.PoolAffinity.AllowedHostIDs)
 	}
 
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceVMUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool := vmFromResource(d)
 	_, err := pool.Update(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceVMRead(d, m)
+	return resourceVMRead(ctx, d, m)
 }
 
-func resourceVMDelete(d *schema.ResourceData, m interface{}) error {
+func resourceVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	pool, err := client.GetPool(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	err = pool.Delete(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		pool, err := client.GetPool(d.Id())
 		if err == nil && pool.State == "deleting" {
 			time.Sleep(5 * time.Second)
-			return resource.RetryableError(fmt.Errorf("Deleting pool %s", d.Id()))
+			return resource.RetryableError(fmt.Errorf("deleting pool %s", d.Id()))
 		}
 		if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 			time.Sleep(5 * time.Second)
@@ -383,4 +385,8 @@ func resourceVMDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

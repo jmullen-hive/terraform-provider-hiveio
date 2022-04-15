@@ -1,10 +1,12 @@
 package hiveio
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -12,11 +14,11 @@ import (
 
 func resourceStoragePool() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceStoragePoolCreate,
-		Read:   resourceStoragePoolRead,
-		Delete: resourceStoragePoolDelete,
+		CreateContext: resourceStoragePoolCreate,
+		ReadContext:   resourceStoragePoolRead,
+		DeleteContext: resourceStoragePoolDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -101,7 +103,7 @@ func resourceStoragePool() *schema.Resource {
 	}
 }
 
-func resourceStoragePoolCreate(d *schema.ResourceData, m interface{}) error {
+func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var storage *rest.StoragePool
 	storage = &rest.StoragePool{
@@ -147,26 +149,26 @@ func resourceStoragePoolCreate(d *schema.ResourceData, m interface{}) error {
 
 	_, err := storage.Create(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	storage, err = client.GetStoragePoolByName(storage.Name)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(storage.ID)
-	return resourceStoragePoolRead(d, m)
+	return resourceStoragePoolRead(ctx, d, m)
 }
 
-func resourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
+func resourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var storage *rest.StoragePool
 	var err error
 	storage, err = client.GetStoragePool(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(storage.ID)
 	d.Set("name", storage.Name)
@@ -180,25 +182,29 @@ func resourceStoragePoolRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("roles", storage.Roles)
 	d.Set("s3_acess_key_id", storage.S3AccessKeyID)
 	d.Set("s3_region", storage.S3Region)
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceStoragePoolDelete(d *schema.ResourceData, m interface{}) error {
+func resourceStoragePoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	storage, err := client.GetStoragePool(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	//{"error": 423, "message": {"code":"LockedError","message":"Storage pool vms is in use and can not be deleted"}}
-	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		err = storage.Delete(client)
 		if err != nil && strings.Contains(err.Error(), "\"error\": 423") {
 			time.Sleep(2 * time.Second)
-			return resource.RetryableError(fmt.Errorf("Storage Pool %s is in use", d.Id()))
+			return resource.RetryableError(fmt.Errorf("storage Pool %s is in use", d.Id()))
 		}
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
 		return nil
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

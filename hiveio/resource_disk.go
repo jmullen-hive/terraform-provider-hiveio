@@ -1,21 +1,22 @@
 package hiveio
 
 import (
-	"fmt"
+	"context"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceDisk() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceDiskCreate,
-		Read:   resourceDiskRead,
-		Delete: resourceDiskDelete,
+		CreateContext: resourceDiskCreate,
+		ReadContext:   resourceDiskRead,
+		DeleteContext: resourceDiskDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(20 * time.Minute),
@@ -74,7 +75,7 @@ func resourceDisk() *schema.Resource {
 	}
 }
 
-func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
+func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	id := d.Get("storage_pool").(string)
 	filename := d.Get("filename").(string)
@@ -91,15 +92,19 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	var storage *rest.StoragePool
 	storage, err = client.GetStoragePool(id)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if localFileOk {
 		err = storage.Upload(client, localFile.(string), filename)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if srcPoolOk && srcFileOk {
-		srcStorage, err := client.GetStoragePool(srcPool.(string))
+		var srcStorage *rest.StoragePool
+		srcStorage, err = client.GetStoragePool(srcPool.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		task, err = srcStorage.ConvertDisk(client, srcFilename.(string), id, filename, format)
 	} else if srcURLOk {
@@ -107,91 +112,75 @@ func resourceDiskCreate(d *schema.ResourceData, m interface{}) error {
 	} else {
 		task, err = storage.CreateDisk(client, filename, format, size)
 	}
+
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if task == nil {
-		return fmt.Errorf("Failed to create disk: Task was not returned")
+		return diag.Errorf("Failed to create disk: Task was not returned")
 	}
 	task, err = task.WaitForTask(client, false)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if task.State == "failed" {
-		return fmt.Errorf("Failed to Create disk: %s", task.Message)
+		return diag.Errorf("Failed to Create disk: %s", task.Message)
 	}
 	disk, err := storage.DiskInfo(client, filename)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	gbSize := disk.VirtualSize / 1024 / 1024 / 1024
 	if (size - gbSize) > 0 {
 		task, err = storage.GrowDisk(client, filename, size-gbSize)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		task, err = task.WaitForTask(client, false)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if task.State == "failed" {
-			return fmt.Errorf("Failed to resize disk: %s", task.Message)
+			return diag.Errorf("Failed to resize disk: %s", task.Message)
 		}
 	}
 	d.SetId(id + "-" + filename)
-	return resourceDiskRead(d, m)
+	return resourceDiskRead(ctx, d, m)
 }
 
-func resourceDiskRead(d *schema.ResourceData, m interface{}) error {
-	//TODO: Add qemu-img info to hive-rest
+func resourceDiskRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	id := d.Get("storage_pool").(string)
 	filename := d.Get("filename").(string)
 	storage, err := client.GetStoragePool(id)
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	disk, err := storage.DiskInfo(client, filename)
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.Set("size", disk.VirtualSize/1024/1024/1024)
 	d.Set("format", disk.Format)
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceDiskExists(d *schema.ResourceData, m interface{}) (bool, error) {
-	client := m.(*rest.Client)
-	id := d.Get("storage_pool").(string)
-	storage, err := client.GetStoragePool(id)
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	_, err = storage.DiskInfo(client, d.Get("filename").(string))
-	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return false, nil
-	}
-	return true, err
-}
-
-func resourceDiskDelete(d *schema.ResourceData, m interface{}) error {
+func resourceDiskDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	id := d.Get("storage_pool").(string)
 	storage, err := client.GetStoragePool(id)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	err = storage.DeleteFile(client, d.Get("filename").(string))
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
-		return nil
+		return diag.Diagnostics{}
 	}
-	return err
+	return diag.FromErr(err)
 }

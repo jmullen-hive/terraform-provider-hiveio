@@ -1,20 +1,22 @@
 package hiveio
 
 import (
+	"context"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceProfile() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceProfileCreate,
-		Read:   resourceProfileRead,
-		Update: resourceProfileUpdate,
-		Delete: resourceProfileDelete,
+		CreateContext: resourceProfileCreate,
+		ReadContext:   resourceProfileRead,
+		UpdateContext: resourceProfileUpdate,
+		DeleteContext: resourceProfileDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -221,8 +223,7 @@ func resourceProfile() *schema.Resource {
 }
 
 func profileFromResource(d *schema.ResourceData) *rest.Profile {
-	var profile *rest.Profile
-	profile = &rest.Profile{
+	profile := &rest.Profile{
 		Name:     d.Get("name").(string),
 		Timezone: d.Get("timezone").(string),
 	}
@@ -294,31 +295,31 @@ func profileFromResource(d *schema.ResourceData) *rest.Profile {
 	return profile
 }
 
-func resourceProfileCreate(d *schema.ResourceData, m interface{}) error {
+func resourceProfileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	profile := profileFromResource(d)
 	_, err := profile.Create(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	profile, err = client.GetProfileByName(profile.Name)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(profile.ID)
-	return resourceProfileRead(d, m)
+	return resourceProfileRead(ctx, d, m)
 }
 
-func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
+func resourceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var profile *rest.Profile
 	var err error
 	profile, err = client.GetProfile(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	} else if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Set("name", profile.Name)
@@ -365,24 +366,28 @@ func resourceProfileRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("broker_options.0.redirect_usb", profile.BrokerOptions.RedirectUSB)
 		d.Set("broker_options.0.smart_resize", profile.BrokerOptions.SmartResize)
 	}
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceProfileUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceProfileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	profile := profileFromResource(d)
 	_, err := profile.Update(client)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceProfileRead(d, m)
+	return resourceProfileRead(ctx, d, m)
 }
 
-func resourceProfileDelete(d *schema.ResourceData, m interface{}) error {
+func resourceProfileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	profile, err := client.GetProfile(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return profile.Delete(client)
+	err = profile.Delete(client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }

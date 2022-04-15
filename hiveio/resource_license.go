@@ -1,18 +1,21 @@
 package hiveio
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceLicense() *schema.Resource {
 	return &schema.Resource{
-		Description: "Add a license for a new cluster",
-		Create:      resourceLicenseCreate,
-		Read:        resourceLicenseRead,
-		Delete:      resourceLicenseDelete,
+		Description:   "Add a license for a new cluster",
+		CreateContext: resourceLicenseCreate,
+		ReadContext:   resourceLicenseRead,
+		DeleteContext: resourceLicenseDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -37,44 +40,44 @@ func resourceLicense() *schema.Resource {
 	}
 }
 
-func resourceLicenseCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLicenseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	clusterID, err := client.ClusterID()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	cluster, err := client.GetCluster(clusterID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	err = cluster.SetLicense(client, d.Get("license").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(d.Get("license").(string))
-	return resourceLicenseRead(d, m)
+	return resourceLicenseRead(ctx, d, m)
 }
 
-func resourceLicenseRead(d *schema.ResourceData, m interface{}) error {
+func resourceLicenseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	clusterID, err := client.ClusterID()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	cluster, err := client.GetCluster(clusterID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if cluster.License == nil {
 		d.SetId("")
-		return nil
+		return diag.Diagnostics{}
 	}
 	d.Set("type", cluster.License.Type)
 	d.Set("expiration", cluster.License.Expiration)
 	d.Set("max_guests", cluster.License.MaxGuests)
-	return nil
+	return diag.Diagnostics{}
 }
 
-func resourceLicenseDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+func resourceLicenseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return diag.Diagnostics{}
 }

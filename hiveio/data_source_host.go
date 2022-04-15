@@ -1,8 +1,9 @@
 package hiveio
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -10,7 +11,7 @@ import (
 func dataSourceHost() *schema.Resource {
 	return &schema.Resource{
 		Description: "A data source to retrieve host information by ip or hostname.",
-		Read:        dataSourceHostRead,
+		ReadContext: dataSourceHostRead,
 		Schema: map[string]*schema.Schema{
 			"ip_address": {
 				Type:     schema.TypeString,
@@ -36,7 +37,7 @@ func dataSourceHost() *schema.Resource {
 	}
 }
 
-func dataSourceHostRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var host rest.Host
 	ip, ipOk := d.GetOk("ip")
@@ -45,22 +46,22 @@ func dataSourceHostRead(d *schema.ResourceData, m interface{}) error {
 	if ipOk {
 		hosts, err := client.ListHosts("ip=" + ip.(string))
 		if err != nil || len(hosts) != 1 {
-			return fmt.Errorf("Host not found")
+			return diag.Errorf("Host not found")
 		}
 		host = hosts[0]
 	} else if hostnameOk {
 		hosts, err := client.ListHosts("hostname=" + hostname.(string))
 		if err != nil || len(hosts) != 1 {
-			return fmt.Errorf("Host not found")
+			return diag.Errorf("Host not found")
 		}
 		host = hosts[0]
 	} else {
-		return fmt.Errorf("ip_address or hostname must be provided")
+		return diag.Errorf("ip_address or hostname must be provided")
 	}
 	d.Set("ip_address", host.IP)
 	d.Set("hostname", host.Hostname)
 	d.Set("hostid", host.Hostid)
 	d.Set("cluster_id", host.Appliance.ClusterID)
 	d.Set("software_version", host.Appliance.Firmware.Software)
-	return nil
+	return diag.Diagnostics{}
 }
