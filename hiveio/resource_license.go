@@ -21,6 +21,18 @@ func resourceLicense() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"expiration": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"max_guests": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -40,14 +52,29 @@ func resourceLicenseCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	d.SetId(d.Get("license").(string))
-	return nil
+	return resourceLicenseRead(d, m)
 }
 
 func resourceLicenseRead(d *schema.ResourceData, m interface{}) error {
+	client := m.(*rest.Client)
+	clusterID, err := client.ClusterID()
+	if err != nil {
+		return err
+	}
+	cluster, err := client.GetCluster(clusterID)
+	if err != nil {
+		return err
+	}
+	if cluster.License == nil {
+		d.SetId("")
+		return nil
+	}
+	d.Set("type", cluster.License.Type)
+	d.Set("expiration", cluster.License.Expiration)
+	d.Set("max_guests", cluster.License.MaxGuests)
 	return nil
 }
 
 func resourceLicenseDelete(d *schema.ResourceData, m interface{}) error {
-	//Not supported, so just return nil
 	return nil
 }
