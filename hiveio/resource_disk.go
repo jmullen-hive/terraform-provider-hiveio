@@ -182,5 +182,8 @@ func resourceDiskDelete(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		return diag.Diagnostics{}
 	}
-	return diag.FromErr(err)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return diag.Diagnostics{}
 }
