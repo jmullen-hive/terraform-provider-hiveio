@@ -79,7 +79,10 @@ func resourceSharedStorageCreate(ctx context.Context, d *schema.ResourceData, m 
 			//waitForMinimumHosts(client, clusterID, setSize, 30*time.Second)
 			time.Sleep(15 * time.Second)
 			return resource.RetryableError(fmt.Errorf("not enough hosts"))
+		} else if err != nil {
+			return resource.NonRetryableError(err)
 		}
+
 		task, err = task.WaitForTask(client, false)
 		if err != nil {
 			return resource.NonRetryableError(err)
