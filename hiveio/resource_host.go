@@ -147,9 +147,16 @@ func resourceHostDelete(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	//services might still be restarting from maintenance mode
 	time.Sleep(10 * time.Second)
-	err = host.UnjoinCluster(client)
+	task, err := host.UnjoinCluster(client)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	task, err = task.WaitForTask(client, false)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if task.State == "failed" {
+		return diag.Errorf("Failed to remove host: %s", task.Message)
 	}
 	return diag.Diagnostics{}
 }
