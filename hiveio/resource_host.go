@@ -68,7 +68,7 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	task, err = task.WaitForTask(client, false)
+	task, err = task.WaitForTaskWithContext(ctx, client, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,7 +88,7 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	task, err = task.WaitForTask(client, false)
+	task, err = task.WaitForTaskWithContext(ctx, client, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -137,7 +137,7 @@ func resourceHostDelete(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		task, err = task.WaitForTask(client, false)
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -151,7 +151,7 @@ func resourceHostDelete(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	task, err = task.WaitForTask(client, false)
+	task, err = task.WaitForTaskWithContext(ctx, client, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}

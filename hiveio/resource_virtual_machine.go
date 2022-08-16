@@ -284,7 +284,7 @@ func resourceVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 				return nil
 			}
 		}
-		err = guest.WaitForGuest(client, d.Timeout(schema.TimeoutCreate))
+		err = guest.WaitForGuestWithContext(ctx, client, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}

@@ -83,7 +83,7 @@ func resourceSharedStorageCreate(ctx context.Context, d *schema.ResourceData, m 
 			return resource.NonRetryableError(err)
 		}
 
-		task, err = task.WaitForTask(client, false)
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
@@ -148,7 +148,7 @@ func resourceSharedStorageDelete(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return resource.RetryableError(err)
 		}
-		task, err = task.WaitForTask(client, false)
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
 		if err != nil {
 			return resource.RetryableError(err)
 		}

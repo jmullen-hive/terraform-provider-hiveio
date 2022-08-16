@@ -216,7 +216,7 @@ func resourceGuestPoolCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 	if d.Get("wait_for_build").(bool) {
-		pool.WaitForPool(client, "tracking", 60*time.Minute)
+		pool.WaitForPoolWithContext(ctx, client, "tracking", 60*time.Minute)
 	}
 	d.SetId(pool.ID)
 	return resourceGuestPoolRead(ctx, d, m)

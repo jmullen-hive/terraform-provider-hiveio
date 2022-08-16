@@ -119,7 +119,8 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if task == nil {
 		return diag.Errorf("Failed to create disk: Task was not returned")
 	}
-	task, err = task.WaitForTask(client, false)
+
+	task, err = task.WaitForTaskWithContext(ctx, client, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +137,7 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		task, err = task.WaitForTask(client, false)
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
 		if err != nil {
 			return diag.FromErr(err)
 		}
