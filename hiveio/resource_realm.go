@@ -30,20 +30,19 @@ func resourceRealm() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
+			"site": {
+				Type:        schema.TypeString,
+				Description: "Active directory site to use instead of Default-First-Site-Name",
+				Optional:    true,
+			},
+			"alias": {
+				Type:        schema.TypeString,
+				Description: "Alias for the fqdn for broker login",
+				Optional:    true,
 			},
 			"verified": {
 				Type:     schema.TypeBool,
 				Optional: true,
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 			"username": {
 				Type:        schema.TypeString,
@@ -60,8 +59,7 @@ func resourceRealm() *schema.Resource {
 	}
 }
 
-func resourceRealmCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+func realmFromResource(d *schema.ResourceData) *rest.Realm {
 	realm := &rest.Realm{
 		Name: d.Get("name").(string),
 		FQDN: d.Get("fqdn").(string),
@@ -70,7 +68,23 @@ func resourceRealmCreate(ctx context.Context, d *schema.ResourceData, m interfac
 			Password: d.Get("password").(string),
 		},
 	}
+	if site, ok := d.GetOk("site"); ok {
+		realm.Site = site.(string)
+	}
 
+	if alias, ok := d.GetOk("alias"); ok {
+		realm.Alias = alias.(string)
+	}
+
+	if verified, ok := d.GetOk("verified"); ok {
+		realm.Verified = verified.(bool)
+	}
+	return realm
+}
+
+func resourceRealmCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*rest.Client)
+	realm := realmFromResource(d)
 	_, err := realm.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
@@ -93,14 +107,15 @@ func resourceRealmRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.SetId(realm.Name)
 	d.Set("name", realm.Name)
 	d.Set("fqdn", realm.FQDN)
+	d.Set("username", realm.ServiceAccount.Username)
+	d.Set("site", realm.Site)
+	d.Set("alias", realm.Alias)
 	return diag.Diagnostics{}
 }
 
 func resourceRealmUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
-	var realm rest.Realm
-	realm.Name = d.Get("name").(string)
-	realm.FQDN = d.Get("fqdn").(string)
+	realm := realmFromResource(d)
 	_, err := realm.Update(client)
 	if err != nil {
 		return diag.FromErr(err)
