@@ -2,8 +2,6 @@ module github.com/hive-io/terraform-provider-hiveio
 
 go 1.17
 
-replace github.com/hive-io/hive-go-client => ../hive-go-client
-
 require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
