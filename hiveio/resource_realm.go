@@ -44,6 +44,12 @@ func resourceRealm() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"tls": {
+				Type:        schema.TypeBool,
+				Description: "Require tls for the ldap connection",
+				Optional:    true,
+				Default:     false,
+			},
 			"username": {
 				Type:        schema.TypeString,
 				Description: "Service Account username",
@@ -59,10 +65,11 @@ func resourceRealm() *schema.Resource {
 	}
 }
 
-func realmFromResource(d *schema.ResourceData) *rest.Realm {
-	realm := &rest.Realm{
-		Name: d.Get("name").(string),
-		FQDN: d.Get("fqdn").(string),
+func realmFromResource(d *schema.ResourceData) rest.Realm {
+	realm := rest.Realm{
+		Name:     d.Get("name").(string),
+		FQDN:     d.Get("fqdn").(string),
+		ForceTLS: d.Get("tls").(bool),
 		ServiceAccount: &rest.RealmServiceAccount{
 			Username: d.Get("username").(string),
 			Password: d.Get("password").(string),
@@ -110,6 +117,7 @@ func resourceRealmRead(ctx context.Context, d *schema.ResourceData, m interface{
 	d.Set("username", realm.ServiceAccount.Username)
 	d.Set("site", realm.Site)
 	d.Set("alias", realm.Alias)
+	d.Set("tls", realm.ForceTLS)
 	return diag.Diagnostics{}
 }
 
