@@ -123,6 +123,10 @@ github.com/hive-io/hive-go-client v0.0.0-20230802230232-1344bd1b43c9 h1:6oAqdEPy
 github.com/hive-io/hive-go-client v0.0.0-20230802230232-1344bd1b43c9/go.mod h1:37JplR2dg6796K/fnWsOypWmiaLnUww+g6EPUKFIXaY=
 github.com/hive-io/hive-go-client v0.0.0-20240326120716-5928fa92bdf9 h1:FMjXG0ClG+CbuhApwi9htEtZWOzq6dAAyIZrR0C5rTI=
 github.com/hive-io/hive-go-client v0.0.0-20240326120716-5928fa92bdf9/go.mod h1:pzfAZ+S7+K2qfoQmT2qex2F8XrwKkosLB+T95b15Pzo=
+github.com/hive-io/hive-go-client v0.0.0-20240430180622-44b57ef42069 h1:4wiTfM4qe5atwfiNerr4es+e6iQxvyXQI4E3ut3Rfo0=
+github.com/hive-io/hive-go-client v0.0.0-20240430180622-44b57ef42069/go.mod h1:pzfAZ+S7+K2qfoQmT2qex2F8XrwKkosLB+T95b15Pzo=
+github.com/hive-io/hive-go-client v0.0.0-20240513215748-2ed9622b570f h1:T5z3q9jGwh3XplSo0d8TC/H7uX9kyPMdVVvlF0FgnSE=
+github.com/hive-io/hive-go-client v0.0.0-20240513215748-2ed9622b570f/go.mod h1:pzfAZ+S7+K2qfoQmT2qex2F8XrwKkosLB+T95b15Pzo=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/imdario/mergo v0.3.13 h1:lFzP57bqS/wsqKssCGmtLAb8A0wKjLGrve2q3PPVcBk=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
