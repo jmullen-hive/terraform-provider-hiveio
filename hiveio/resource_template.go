@@ -228,30 +228,32 @@ func templateFromResource(d *schema.ResourceData) rest.Template {
 		interfaces = append(interfaces, &iface)
 	}
 	template.Interfaces = interfaces
-
-	template.BrokerOptions.DefaultConnection = d.Get("broker_default_connection").(string)
-	var connections []rest.GuestBrokerConnection
-	for i := 0; i < d.Get("broker_connection.#").(int); i++ {
-		prefix := fmt.Sprintf("broker_connection.%d.", i)
-		connection := rest.GuestBrokerConnection{
-			Name:         d.Get(prefix + "name").(string),
-			Description:  d.Get(prefix + "description").(string),
-			Port:         uint(d.Get(prefix + "port").(int)),
-			Protocol:     d.Get(prefix + "protocol").(string),
-			DisableHtml5: d.Get(prefix + "disable_html5").(bool),
-		}
-		connection.Gateway.Disabled = d.Get(prefix + "gateway.0." + "disabled").(bool)
-		connection.Gateway.Persistent = d.Get(prefix + "gateway.0." + "persistent").(bool)
-		if protocolsInterface, ok := d.GetOk(prefix + "gateway.0." + "protocols"); ok {
-			protocols := make([]string, len(protocolsInterface.([]interface{})))
-			for i, protocol := range protocolsInterface.([]interface{}) {
-				protocols[i] = protocol.(string)
+	if nConnections, ok := d.Get("broker_connection.#").(int); ok && nConnections > 0 {
+		template.BrokerOptions = &rest.GuestBrokerOptions{}
+		template.BrokerOptions.DefaultConnection = d.Get("broker_default_connection").(string)
+		var connections []rest.GuestBrokerConnection
+		for i := 0; i < nConnections; i++ {
+			prefix := fmt.Sprintf("broker_connection.%d.", i)
+			connection := rest.GuestBrokerConnection{
+				Name:         d.Get(prefix + "name").(string),
+				Description:  d.Get(prefix + "description").(string),
+				Port:         uint(d.Get(prefix + "port").(int)),
+				Protocol:     d.Get(prefix + "protocol").(string),
+				DisableHtml5: d.Get(prefix + "disable_html5").(bool),
 			}
-			connection.Gateway.Protocols = protocols
+			connection.Gateway.Disabled = d.Get(prefix + "gateway.0." + "disabled").(bool)
+			connection.Gateway.Persistent = d.Get(prefix + "gateway.0." + "persistent").(bool)
+			if protocolsInterface, ok := d.GetOk(prefix + "gateway.0." + "protocols"); ok {
+				protocols := make([]string, len(protocolsInterface.([]interface{})))
+				for i, protocol := range protocolsInterface.([]interface{}) {
+					protocols[i] = protocol.(string)
+				}
+				connection.Gateway.Protocols = protocols
+			}
+			connections = append(connections, connection)
 		}
-		connections = append(connections, connection)
+		template.BrokerOptions.Connections = connections
 	}
-	template.BrokerOptions.Connections = connections
 
 	return template
 }
@@ -301,17 +303,19 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, m interfa
 		d.Set(prefix+"vlan", iface.Vlan)
 	}
 
-	d.Set("broker_default_connection", template.BrokerOptions.DefaultConnection)
-	for i, connection := range template.BrokerOptions.Connections {
-		prefix := fmt.Sprintf("broker_connection.%d.", i)
-		d.Set(prefix+"name", connection.Name)
-		d.Set(prefix+"description", connection.Description)
-		d.Set(prefix+"port", connection.Port)
-		d.Set(prefix+"protocol", connection.Protocol)
-		d.Set(prefix+"disable_html5", connection.DisableHtml5)
-		d.Set(prefix+"gateway.0.disabled", connection.Gateway.Disabled)
-		d.Set(prefix+"gateway.0.persistent", connection.Gateway.Persistent)
-		d.Set(prefix+"gateway.0.protocols", connection.Gateway.Protocols)
+	if template.BrokerOptions != nil {
+		d.Set("broker_default_connection", template.BrokerOptions.DefaultConnection)
+		for i, connection := range template.BrokerOptions.Connections {
+			prefix := fmt.Sprintf("broker_connection.%d.", i)
+			d.Set(prefix+"name", connection.Name)
+			d.Set(prefix+"description", connection.Description)
+			d.Set(prefix+"port", connection.Port)
+			d.Set(prefix+"protocol", connection.Protocol)
+			d.Set(prefix+"disable_html5", connection.DisableHtml5)
+			d.Set(prefix+"gateway.0.disabled", connection.Gateway.Disabled)
+			d.Set(prefix+"gateway.0.persistent", connection.Gateway.Persistent)
+			d.Set(prefix+"gateway.0.protocols", connection.Gateway.Protocols)
+		}
 	}
 
 	return diag.Diagnostics{}
