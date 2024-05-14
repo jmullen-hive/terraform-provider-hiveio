@@ -94,6 +94,11 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if _, err := storage.DiskInfo(client, filename); err == nil {
+		//disk already exists
+		d.SetId(id + "-" + filename)
+		return resourceDiskRead(ctx, d, m)
+	}
 	if localFileOk {
 		err = storage.Upload(client, localFile.(string), filename)
 		if err != nil {
