@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -396,18 +396,18 @@ func resourceGuestPoolDelete(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		pool, err := client.GetPool(d.Id())
 		if err == nil && pool.State == "deleting" {
 			time.Sleep(5 * time.Second)
-			return resource.RetryableError(fmt.Errorf("deleting pool %s", d.Id()))
+			return retry.RetryableError(fmt.Errorf("deleting pool %s", d.Id()))
 		}
 		if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 			time.Sleep(5 * time.Second)
 			return nil
 		}
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})

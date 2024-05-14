@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -73,22 +73,22 @@ func resourceSharedStorageCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		task, err := cluster.EnableSharedStorage(client, utilization, setSize)
 		if err != nil && strings.Contains(err.Error(), "Not enough hosts") {
 			//waitForMinimumHosts(client, clusterID, setSize, 30*time.Second)
 			time.Sleep(15 * time.Second)
-			return resource.RetryableError(fmt.Errorf("not enough hosts"))
+			return retry.RetryableError(fmt.Errorf("not enough hosts"))
 		} else if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		task, err = task.WaitForTaskWithContext(ctx, client, false)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		if task.State == "failed" {
-			return resource.NonRetryableError(fmt.Errorf("failed to Enable Shared storage: %s", task.Message))
+			return retry.NonRetryableError(fmt.Errorf("failed to Enable Shared storage: %s", task.Message))
 		}
 		return nil
 	})
@@ -135,25 +135,25 @@ func resourceSharedStorageRead(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceSharedStorageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
-	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		clusterID, err := client.ClusterID()
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		cluster, err := client.GetCluster(clusterID)
 		if err != nil {
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		task, err := cluster.DisableSharedStorage(client)
 		if err != nil {
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		}
 		task, err = task.WaitForTaskWithContext(ctx, client, false)
 		if err != nil {
-			return resource.RetryableError(err)
+			return retry.RetryableError(err)
 		}
 		if task.State == "failed" {
-			return resource.NonRetryableError(fmt.Errorf("failed to Disable Shared storage: %s", task.Message))
+			return retry.NonRetryableError(fmt.Errorf("failed to Disable Shared storage: %s", task.Message))
 		}
 		return nil
 	})
