@@ -24,19 +24,9 @@ func init() {
 		}
 		return strings.TrimSpace(desc)
 	}
-
-	// Customize the content of descriptions when output. For example you can add defaults on
-	// to the exported descriptions if present.
-	// schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
-	// 	desc := s.Description
-	// 	if s.Default != nil {
-	// 		desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
-	// 	}
-	// 	return strings.TrimSpace(desc)
-	// }
 }
 
-//Provider hiveio terraform provider
+// Provider hiveio terraform provider
 func Provider() *schema.Provider {
 	return &schema.Provider{
 
@@ -99,6 +89,7 @@ func Provider() *schema.Provider {
 			"hiveio_external_guest":  resourceExternalGuest(),
 			"hiveio_user":            resourceUser(),
 			"hiveio_shared_storage":  resourceSharedStorage(),
+			"hiveio_host_network":    resourceHostNetwork(),
 		},
 
 		ConfigureFunc: providerConfigure,

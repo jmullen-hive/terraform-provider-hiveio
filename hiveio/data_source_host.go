@@ -40,16 +40,14 @@ func dataSourceHost() *schema.Resource {
 func dataSourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var host rest.Host
-	ip, ipOk := d.GetOk("ip")
-	hostname, hostnameOk := d.GetOk("hostname")
 
-	if ipOk {
+	if ip, ok := d.GetOk("ip"); ok {
 		hosts, err := client.ListHosts("ip=" + ip.(string))
 		if err != nil || len(hosts) != 1 {
 			return diag.Errorf("Host not found")
 		}
 		host = hosts[0]
-	} else if hostnameOk {
+	} else if hostname, ok := d.GetOk("hostname"); ok {
 		hosts, err := client.ListHosts("hostname=" + hostname.(string))
 		if err != nil || len(hosts) != 1 {
 			return diag.Errorf("Host not found")

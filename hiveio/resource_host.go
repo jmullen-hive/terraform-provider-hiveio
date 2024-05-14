@@ -64,6 +64,16 @@ func resourceHost() *schema.Resource {
 func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	ip := d.Get("ip_address").(string)
+	hosts, err := client.ListHosts("")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	for _, host := range hosts {
+		if host.IP == ip || host.Hostname == ip {
+			d.SetId(host.Hostid)
+			return resourceHostRead(ctx, d, m)
+		}
+	}
 	task, err := client.JoinHost(d.Get("username").(string), d.Get("password").(string), ip)
 	if err != nil {
 		return diag.FromErr(err)
@@ -88,6 +98,7 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	task, err = task.WaitForTaskWithContext(ctx, client, false)
 	if err != nil {
 		return diag.FromErr(err)
