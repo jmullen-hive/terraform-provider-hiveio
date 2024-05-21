@@ -75,6 +75,7 @@ func Provider() *schema.Provider {
 			"hiveio_profile":      dataSourceProfile(),
 			"hiveio_storage_pool": dataSourceStoragePool(),
 			"hiveio_host":         dataSourceHost(),
+			"hiveio_host_network": dataSourceHostNetwork(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"hiveio_host":            resourceHost(),
