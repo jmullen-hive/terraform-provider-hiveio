@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
-	github.com/hive-io/hive-go-client v0.0.0-20240513215748-2ed9622b570f
+	github.com/hive-io/hive-go-client v0.0.0-20240530154457-6b1de9b05dfe
 )
 
 require (
