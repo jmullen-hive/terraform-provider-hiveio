@@ -4,8 +4,9 @@ go 1.21
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
-	github.com/hive-io/hive-go-client v0.0.0-20240530154457-6b1de9b05dfe
+	github.com/hive-io/hive-go-client v0.0.0-20250424123914-a0b6383cfe53
 )
 
 require (
@@ -25,7 +26,6 @@ require (
 	github.com/hashicorp/hcl/v2 v2.20.1 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.23.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.2.3 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
