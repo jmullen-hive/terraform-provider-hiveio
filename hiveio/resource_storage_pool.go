@@ -96,6 +96,29 @@ func resourceStoragePool() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			//ocfs2 options
+			"device": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"fs_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"create_filesystem": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
+			"clear_disk": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(3 * time.Minute),
@@ -147,6 +170,28 @@ func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m in
 		storage.S3Region = s3Region.(string)
 	}
 
+	if mountOptions, ok := d.GetOk("mount_options"); ok {
+		mountOptionsList := []string{}
+		for _, value := range mountOptions.([]interface{}) {
+			mountOptionsList = append(mountOptionsList, value.(string))
+		}
+		storage.MountOptions = mountOptionsList
+	}
+	if storage.Type == "ocfs2" {
+		if device, ok := d.GetOk("device"); ok {
+			storage.Device = device.(string)
+		}
+		if fsName, ok := d.GetOk("fs_name"); ok {
+			storage.FSName = fsName.(string)
+		}
+		if createFilesystem, ok := d.GetOk("create_filesystem"); ok {
+			storage.CreateFilesystem = createFilesystem.(bool)
+		}
+		if clearDisk, ok := d.GetOk("clear_disk"); ok {
+			storage.ClearDisk = clearDisk.(bool)
+		}
+	}
+
 	_, err := storage.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
@@ -179,9 +224,14 @@ func resourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("username", storage.Username)
 	//d.Set("password", storage.Password)
 	//d.Set("key", storage.Key)
+	d.Set("mount_options", storage.MountOptions)
 	d.Set("roles", storage.Roles)
 	d.Set("s3_acess_key_id", storage.S3AccessKeyID)
 	d.Set("s3_region", storage.S3Region)
+
+	d.Set("fs_name", storage.FSName)
+	d.Set("device", storage.Device)
+
 	return diag.Diagnostics{}
 }
 
