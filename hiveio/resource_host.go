@@ -94,6 +94,8 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if d.Get("gateway_only").(bool) {
 		state = "broker"
 	}
+	// Add a delay to ensure the host is fully joined
+	time.Sleep(5 * time.Second)
 	task, err = host.SetState(client, state)
 	if err != nil {
 		return diag.FromErr(err)
@@ -105,6 +107,11 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	if task.State == "failed" {
 		return diag.Errorf("Failed to set host state: %s", task.Message)
+	}
+	time.Sleep(10 * time.Second)
+	host, err = client.GetHost(hostid)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId(host.Hostid)
 	return resourceHostRead(ctx, d, m)
