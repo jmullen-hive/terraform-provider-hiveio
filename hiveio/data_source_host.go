@@ -61,5 +61,6 @@ func dataSourceHostRead(ctx context.Context, d *schema.ResourceData, m interface
 	d.Set("hostid", host.Hostid)
 	d.Set("cluster_id", host.Appliance.ClusterID)
 	d.Set("software_version", host.Appliance.Firmware.Software)
+	d.SetId(host.Hostid)
 	return diag.Diagnostics{}
 }

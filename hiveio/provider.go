@@ -91,6 +91,7 @@ func Provider() *schema.Provider {
 			"hiveio_user":            resourceUser(),
 			"hiveio_shared_storage":  resourceSharedStorage(),
 			"hiveio_host_network":    resourceHostNetwork(),
+			"hiveio_host_iscsi":      resourceHostIscsi(),
 		},
 
 		ConfigureFunc: providerConfigure,

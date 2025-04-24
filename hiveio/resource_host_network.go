@@ -155,11 +155,11 @@ func resourceHostNetworkUpdate(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceHostNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
-	HostNetwork, err := client.GetHost(d.Get("hostid").(string))
+	host, err := client.GetHost(d.Get("hostid").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = HostNetwork.Delete(client)
+	err = host.DeleteNetwork(client, d.Get("name").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
