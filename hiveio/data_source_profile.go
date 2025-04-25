@@ -232,44 +232,61 @@ func dataSourceProfileRead(ctx context.Context, d *schema.ResourceData, m interf
 	d.Set("timezone", profile.Timezone)
 
 	if profile.AdConfig != nil {
-		d.Set("ad_config.0.domain", profile.AdConfig.Domain)
-		d.Set("ad_config.0.username", profile.AdConfig.Domain)
-		d.Set("ad_config.0.user_group", profile.AdConfig.UserGroup)
-		d.Set("ad_config.0.ou", profile.AdConfig.Ou)
+		adConfig := []map[string]interface{}{
+			{
+				"domain":     profile.AdConfig.Domain,
+				"username":   profile.AdConfig.Username,
+				"user_group": profile.AdConfig.UserGroup,
+				"ou":         profile.AdConfig.Ou,
+			},
+		}
+		d.Set("ad_config", adConfig)
 	}
 
 	if profile.UserVolumes != nil {
-		d.Set("user_volumes.0.repository", profile.UserVolumes.Repository)
-		d.Set("user_volumes.0.size", profile.UserVolumes.Size)
-		d.Set("user_volumes.0.backup_schedule", profile.UserVolumes.BackupSchedule)
-		d.Set("user_volumes.0.target", profile.UserVolumes.Target)
+		d.Set("user_volumes", []map[string]interface{}{
+			{
+				"repository":      profile.UserVolumes.Repository,
+				"size":            profile.UserVolumes.Size,
+				"backup_schedule": profile.UserVolumes.BackupSchedule,
+				"target":          profile.UserVolumes.Target,
+			},
+		})
 	}
 	if profile.Backup != nil {
-		d.Set("backup.0.enabled", profile.Backup.Enabled)
-		d.Set("backup.0.frequency", profile.Backup.Frequency)
-		d.Set("backup.0.target", profile.Backup.TargetStorageID)
+		d.Set("backup", []map[string]interface{}{
+			{
+				"enabled":   profile.Backup.Enabled,
+				"frequency": profile.Backup.Frequency,
+				"target":    profile.Backup.TargetStorageID,
+			},
+		})
 	}
 
 	if profile.BrokerOptions != nil {
-		d.Set("broker_options.0.allow_desktop_composition", profile.BrokerOptions.AllowDesktopComposition)
-		d.Set("broker_options.0.audio_capture", profile.BrokerOptions.AudioCapture)
-		d.Set("broker_options.0.credssp", profile.BrokerOptions.RedirectCSSP)
-		d.Set("broker_options.0.disable_full_window_drag", profile.BrokerOptions.DisableFullWindowDrag)
-		d.Set("broker_options.0.disable_menu_anims", profile.BrokerOptions.DisableMenuAnims)
-		d.Set("broker_options.0.disable_printer", profile.BrokerOptions.DisablePrinter)
-		d.Set("broker_options.0.disable_themes", profile.BrokerOptions.DisableThemes)
-		d.Set("broker_options.0.disable_wallpaper", profile.BrokerOptions.DisableWallpaper)
-		d.Set("broker_options.0.fail_on_cert_mismatch", profile.BrokerOptions.FailOnCertMismatch)
-		d.Set("broker_options.0.hide_authentication_failure", profile.BrokerOptions.HideAuthenticationFailure)
-		d.Set("broker_options.0.html5", profile.BrokerOptions.EnableHTML5)
-		d.Set("broker_options.0.inject_password", profile.BrokerOptions.InjectPassword)
-		d.Set("broker_options.0.redirect_clipboard", profile.BrokerOptions.RedirectClipboard)
-		d.Set("broker_options.0.redirect_disk", profile.BrokerOptions.RedirectDisk)
-		d.Set("broker_options.0.redirect_pnp", profile.BrokerOptions.RedirectPNP)
-		d.Set("broker_options.0.redirect_printer", profile.BrokerOptions.RedirectPrinter)
-		d.Set("broker_options.0.redirect_smartcard", profile.BrokerOptions.RedirectSmartCard)
-		d.Set("broker_options.0.redirect_usb", profile.BrokerOptions.RedirectUSB)
-		d.Set("broker_options.0.smart_resize", profile.BrokerOptions.SmartResize)
+		d.Set("broker_options", []map[string]interface{}{
+			{
+				"allow_desktop_composition":   profile.BrokerOptions.AllowDesktopComposition,
+				"audio_capture":               profile.BrokerOptions.AudioCapture,
+				"credssp":                     profile.BrokerOptions.RedirectCSSP,
+				"disable_full_window_drag":    profile.BrokerOptions.DisableFullWindowDrag,
+				"disable_menu_anims":          profile.BrokerOptions.DisableMenuAnims,
+				"disable_printer":             profile.BrokerOptions.DisablePrinter,
+				"disable_themes":              profile.BrokerOptions.DisableThemes,
+				"disable_wallpaper":           profile.BrokerOptions.DisableWallpaper,
+				"fail_on_cert_mismatch":       profile.BrokerOptions.FailOnCertMismatch,
+				"hide_authentication_failure": profile.BrokerOptions.HideAuthenticationFailure,
+				"html5":                       profile.BrokerOptions.EnableHTML5,
+				"inject_password":             profile.BrokerOptions.InjectPassword,
+				"redirect_clipboard":          profile.BrokerOptions.RedirectClipboard,
+				"redirect_disk":               profile.BrokerOptions.RedirectDisk,
+				"redirect_pnp":                profile.BrokerOptions.RedirectPNP,
+				"redirect_printer":            profile.BrokerOptions.RedirectPrinter,
+				"redirect_smartcard":          profile.BrokerOptions.RedirectSmartCard,
+				"redirect_usb":                profile.BrokerOptions.RedirectUSB,
+				"smart_resize":                profile.BrokerOptions.SmartResize,
+			},
+		})
 	}
 	return diag.Diagnostics{}
 }

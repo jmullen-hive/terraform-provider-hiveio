@@ -329,17 +329,18 @@ func resourceGuestPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 	d.Set("seed", pool.Seed)
 	d.Set("storage_type", pool.StorageType)
 	d.Set("storage_id", pool.StorageID)
-	d.Set("density.0", pool.Density[0])
-	d.Set("density.1", pool.Density[1])
+	d.Set("density", pool.Density)
 	if pool.GuestProfile.CloudInit != nil {
 		d.Set("cloudinit_enabled", pool.GuestProfile.CloudInit.Enabled)
 		d.Set("cloudinit_userdata", pool.GuestProfile.CloudInit.UserData)
 	}
 
 	if pool.Backup != nil {
-		d.Set("backup.0.enabled", pool.Backup.Enabled)
-		d.Set("backup.0.frequency", pool.Backup.Frequency)
-		d.Set("backup.0.target", pool.Backup.TargetStorageID)
+		d.Set("backup", []interface{}{map[string]interface{}{
+			"enabled":   pool.Backup.Enabled,
+			"frequency": pool.Backup.Frequency,
+			"target":    pool.Backup.TargetStorageID,
+		}})
 	}
 	if pool.PoolAffinity != nil && len(pool.PoolAffinity.AllowedHostIDs) > 0 {
 		d.Set("allowed_hosts", pool.PoolAffinity.AllowedHostIDs)
@@ -347,17 +348,24 @@ func resourceGuestPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	if pool.GuestProfile.BrokerOptions != nil {
 		d.Set("broker_default_connection", pool.GuestProfile.BrokerOptions.DefaultConnection)
-		for i, connection := range pool.GuestProfile.BrokerOptions.Connections {
-			prefix := fmt.Sprintf("broker_connections.%d.", i)
-			d.Set(prefix+"name", connection.Name)
-			d.Set(prefix+"description", connection.Description)
-			d.Set(prefix+"port", connection.Port)
-			d.Set(prefix+"protocol", connection.Protocol)
-			d.Set(prefix+"disable_html5", connection.DisableHtml5)
-			d.Set(prefix+"gateway.0.disabled", connection.Gateway.Disabled)
-			d.Set(prefix+"gateway.0.persistent", connection.Gateway.Persistent)
-			d.Set(prefix+"gateway.0.protocols", connection.Gateway.Protocols)
+		connection := make([]interface{}, len(pool.GuestProfile.BrokerOptions.Connections))
+		for i, conn := range pool.GuestProfile.BrokerOptions.Connections {
+			connection[i] = map[string]interface{}{
+				"name":          conn.Name,
+				"description":   conn.Description,
+				"port":          conn.Port,
+				"protocol":      conn.Protocol,
+				"disable_html5": conn.DisableHtml5,
+				"gateway": []interface{}{
+					map[string]interface{}{
+						"disabled":   conn.Gateway.Disabled,
+						"persistent": conn.Gateway.Persistent,
+						"protocols":  conn.Gateway.Protocols,
+					},
+				},
+			}
 		}
+		d.Set("broker_connection", connection)
 	}
 
 	return diag.Diagnostics{}

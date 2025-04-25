@@ -129,7 +129,7 @@ func resourceHostNetworkRead(ctx context.Context, d *schema.ResourceData, m inte
 	} else if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(hostNetwork.Name)
+	d.SetId(fmt.Sprintf("%s/%s", host.Hostid, hostNetwork.Name))
 	d.Set("interface", hostNetwork.Interface)
 	d.Set("vlan", hostNetwork.VLAN)
 	d.Set("dhcp", hostNetwork.DHCP)

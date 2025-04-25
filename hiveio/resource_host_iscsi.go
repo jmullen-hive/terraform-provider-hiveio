@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -130,7 +129,6 @@ func resourceHostIscsiRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Info(ctx, "reading sessions", map[string]interface{}{"sessions": sessions})
 	if len(sessions) == 0 {
 		d.SetId("")
 		return diag.Diagnostics{}
@@ -148,7 +146,7 @@ func resourceHostIscsiRead(ctx context.Context, d *schema.ResourceData, m interf
 		if session.Target != target {
 			continue
 		}
-		
+
 		d.SetId(fmt.Sprintf("%s/%s", session.Portal, session.Target))
 		d.Set("discovered_portal", session.Portal)
 		d.Set("target", session.Target)
@@ -156,7 +154,6 @@ func resourceHostIscsiRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("device_path", session.BlockDevice.Path)
 		return diag.Diagnostics{}
 	}
-	tflog.Info(ctx, "session not found")
 
 	d.SetId("")
 	return diag.Diagnostics{}

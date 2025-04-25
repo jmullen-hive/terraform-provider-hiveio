@@ -222,8 +222,6 @@ func resourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("url", storage.URL)
 	d.Set("type", storage.Type)
 	d.Set("username", storage.Username)
-	//d.Set("password", storage.Password)
-	//d.Set("key", storage.Key)
 	d.Set("mount_options", storage.MountOptions)
 	d.Set("roles", storage.Roles)
 	d.Set("s3_acess_key_id", storage.S3AccessKeyID)

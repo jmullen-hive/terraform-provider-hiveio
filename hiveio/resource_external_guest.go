@@ -196,17 +196,24 @@ func resourceExternalGuestRead(ctx context.Context, d *schema.ResourceData, m in
 	d.Set("disable_port_check", guest.DisablePortCheck)
 
 	d.Set("broker_default_connection", guest.BrokerOptions.DefaultConnection)
-	for i, connection := range guest.BrokerOptions.Connections {
-		prefix := fmt.Sprintf("broker_connection.%d.", i)
-		d.Set(prefix+"name", connection.Name)
-		d.Set(prefix+"description", connection.Description)
-		d.Set(prefix+"port", connection.Port)
-		d.Set(prefix+"protocol", connection.Protocol)
-		d.Set(prefix+"disable_html5", connection.DisableHtml5)
-		d.Set(prefix+"gateway.0.disabled", connection.Gateway.Disabled)
-		d.Set(prefix+"gateway.0.persistent", connection.Gateway.Persistent)
-		d.Set(prefix+"gateway.0.protocols", connection.Gateway.Protocols)
+	connection := make([]interface{}, len(guest.BrokerOptions.Connections))
+	for i, conn := range guest.BrokerOptions.Connections {
+		connection[i] = map[string]interface{}{
+			"name":          conn.Name,
+			"description":   conn.Description,
+			"port":          conn.Port,
+			"protocol":      conn.Protocol,
+			"disable_html5": conn.DisableHtml5,
+			"gateway": []interface{}{
+				map[string]interface{}{
+					"disabled":   conn.Gateway.Disabled,
+					"persistent": conn.Gateway.Persistent,
+					"protocols":  conn.Gateway.Protocols,
+				},
+			},
+		}
 	}
+	d.Set("broker_connection", connection)
 
 	return diag.Diagnostics{}
 }

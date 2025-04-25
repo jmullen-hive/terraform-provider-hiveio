@@ -305,17 +305,24 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if template.BrokerOptions != nil {
 		d.Set("broker_default_connection", template.BrokerOptions.DefaultConnection)
+		connections := make([]map[string]interface{}, len(template.BrokerOptions.Connections))
 		for i, connection := range template.BrokerOptions.Connections {
-			prefix := fmt.Sprintf("broker_connection.%d.", i)
-			d.Set(prefix+"name", connection.Name)
-			d.Set(prefix+"description", connection.Description)
-			d.Set(prefix+"port", connection.Port)
-			d.Set(prefix+"protocol", connection.Protocol)
-			d.Set(prefix+"disable_html5", connection.DisableHtml5)
-			d.Set(prefix+"gateway.0.disabled", connection.Gateway.Disabled)
-			d.Set(prefix+"gateway.0.persistent", connection.Gateway.Persistent)
-			d.Set(prefix+"gateway.0.protocols", connection.Gateway.Protocols)
+			connections[i] = map[string]interface{}{
+				"name":          connection.Name,
+				"description":   connection.Description,
+				"port":          connection.Port,
+				"protocol":      connection.Protocol,
+				"disable_html5": connection.DisableHtml5,
+				"gateway": []map[string]interface{}{
+					{
+						"disabled":   connection.Gateway.Disabled,
+						"persistent": connection.Gateway.Persistent,
+						"protocols":  connection.Gateway.Protocols,
+					},
+				},
+			}
 		}
+		d.Set("broker_connection", connections)
 	}
 
 	return diag.Diagnostics{}
