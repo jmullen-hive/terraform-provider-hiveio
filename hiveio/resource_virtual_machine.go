@@ -89,13 +89,11 @@ func resourceVM() *schema.Resource {
 							Default:  "virtio",
 							Optional: true,
 						},
-						"format": {
-							Type:     schema.TypeString,
-							Default:  "qcow2",
-							Optional: true,
-							ForceNew: true,
-						},
 						"size": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"dev": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -119,6 +117,14 @@ func resourceVM() *schema.Resource {
 							Type:     schema.TypeString,
 							Default:  "virtio",
 							Optional: true,
+						},
+						"ip_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -391,6 +397,9 @@ func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	} else if err != nil {
 		return diag.FromErr(err)
 	}
+	guestName := strings.ToUpper(pool.Name)
+	guestName = strings.ReplaceAll(guestName, " ", "_")
+	guestRecord, _ := client.GetGuest(guestName)
 
 	d.Set("name", pool.Name)
 	d.Set("cpu", pool.GuestProfile.CPU[0])
@@ -401,19 +410,38 @@ func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	d.Set("firmware", pool.GuestProfile.Firmware)
 	d.Set("display_driver", pool.GuestProfile.Vga)
 
+	disks := make([]interface{}, len(pool.GuestProfile.Disks))
 	for i, disk := range pool.GuestProfile.Disks {
-		prefix := fmt.Sprintf("disk.%d.", i)
-		d.Set(prefix+"disk_driver", disk.DiskDriver)
-		d.Set(prefix+"type", disk.Type)
-		d.Set(prefix+"storage_id", disk.StorageID)
-		d.Set(prefix+"filename", disk.Filename)
+		disks[i] = map[string]interface{}{
+			"type":        disk.Type,
+			"storage_id":  disk.StorageID,
+			"filename":    disk.Filename,
+			"disk_driver": disk.DiskDriver,
+		}
 	}
+	d.Set("disk", disks)
 
-	for i, iface := range pool.GuestProfile.Interfaces {
-		prefix := fmt.Sprintf("interface.%d.", i)
-		d.Set(prefix+"emulation", iface.Emulation)
-		d.Set(prefix+"network", iface.Network)
-		d.Set(prefix+"vlan", iface.Vlan)
+	interfaces := make([]interface{}, len(pool.GuestProfile.Interfaces))
+	if guestRecord != nil && len(guestRecord.Interfaces) > 0 {
+		for i, iface := range guestRecord.Interfaces {
+			interfaces[i] = map[string]interface{}{
+				"network":     iface.Network,
+				"vlan":        iface.Vlan,
+				"emulation":   iface.Emulation,
+				"ip_address":  iface.IPAddress,
+				"mac_address": iface.MacAddress,
+			}
+
+		}
+		d.Set("interface", interfaces)
+	} else {
+		for i, iface := range pool.GuestProfile.Interfaces {
+			interfaces[i] = map[string]interface{}{
+				"network":   iface.Network,
+				"vlan":      iface.Vlan,
+				"emulation": iface.Emulation,
+			}
+		}
 	}
 
 	if pool.GuestProfile.CloudInit != nil {
