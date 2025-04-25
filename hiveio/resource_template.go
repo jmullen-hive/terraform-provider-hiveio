@@ -287,21 +287,27 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, m interfa
 	d.Set("os", template.OS)
 	d.Set("manual_agent_install", template.ManualAgentInstall)
 
+	disks := make([]map[string]interface{}, len(template.Disks))
 	for i, disk := range template.Disks {
-		prefix := fmt.Sprintf("disk.%d.", i)
-		d.Set(prefix+"disk_driver", disk.DiskDriver)
-		d.Set(prefix+"type", disk.Type)
-		d.Set(prefix+"storage_id", disk.StorageID)
-		d.Set(prefix+"filename", disk.Filename)
-		d.Set(prefix+"format", disk.Format)
+		disks[i] = map[string]interface{}{
+			"disk_driver": disk.DiskDriver,
+			"type":        disk.Type,
+			"storage_id":  disk.StorageID,
+			"filename":    disk.Filename,
+			"format":      disk.Format,
+		}
 	}
+	d.Set("disk", disks)
 
+	interfaces := make([]map[string]interface{}, len(template.Interfaces))
 	for i, iface := range template.Interfaces {
-		prefix := fmt.Sprintf("interface.%d.", i)
-		d.Set(prefix+"emulation", iface.Emulation)
-		d.Set(prefix+"network", iface.Network)
-		d.Set(prefix+"vlan", iface.Vlan)
+		interfaces[i] = map[string]interface{}{
+			"emulation": iface.Emulation,
+			"network":   iface.Network,
+			"vlan":      iface.Vlan,
+		}
 	}
+	d.Set("interface", interfaces)
 
 	if template.BrokerOptions != nil {
 		d.Set("broker_default_connection", template.BrokerOptions.DefaultConnection)
