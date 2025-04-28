@@ -60,7 +60,6 @@ func resourceRealm() *schema.Resource {
 				Description: "Service Account password",
 				Optional:    true,
 				Sensitive:   true,
-				WriteOnly:   true,
 			},
 		},
 	}
