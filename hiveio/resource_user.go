@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -46,7 +45,7 @@ func resourceUser() *schema.Resource {
 
 func userFromResource(d *schema.ResourceData) (*rest.User, error) {
 	user := rest.User{
-		ID:    uuid.New().String(),
+		ID:    d.Id(),
 		Realm: d.Get("realm").(string),
 		Role:  d.Get("role").(string),
 	}
