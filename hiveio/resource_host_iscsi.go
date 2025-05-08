@@ -100,11 +100,17 @@ func resourceHostIscsiCreate(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("discovered_portal", portal)
 	}
 
+	// Check if the session already exists
+	sessions, err := host.IscsiSessions(client, portal, target)
+	if err == nil && len(sessions) > 0 {
+		return resourceHostIscsiRead(ctx, d, m)
+	}
+
 	authMethod := "None"
 	if username != "" && password != "" {
 		authMethod = "CHAP"
 	}
-	sessions, err := host.IscsiLogin(client, portal, target, authMethod, username, password)
+	sessions, err = host.IscsiLogin(client, portal, target, authMethod, username, password)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,6 +131,7 @@ func resourceHostIscsiRead(ctx context.Context, d *schema.ResourceData, m interf
 	} else if err != nil {
 		return diag.FromErr(err)
 	}
+
 	sessions, err := host.IscsiSessions(client, d.Get("portal").(string), d.Get("target").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -152,6 +159,7 @@ func resourceHostIscsiRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("target", session.Target)
 		d.Set("device_name", session.BlockDevice.Name)
 		d.Set("device_path", session.BlockDevice.Path)
+
 		return diag.Diagnostics{}
 	}
 
