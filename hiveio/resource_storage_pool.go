@@ -3,6 +3,7 @@ package hiveio
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ func resourceStoragePool() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceStoragePoolCreate,
 		ReadContext:   resourceStoragePoolRead,
+		UpdateContext: resourceStoragePoolUpdate,
 		DeleteContext: resourceStoragePoolDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -78,7 +80,6 @@ func resourceStoragePool() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				ForceNew: true, //TODO: add update that only changes this field
 			},
 			"s3_access_key_id": {
 				Type:     schema.TypeString,
@@ -119,6 +120,22 @@ func resourceStoragePool() *schema.Resource {
 				Default:  false,
 				ForceNew: true,
 			},
+			"tags": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"hosts": {
+				Type:        schema.TypeList,
+				Description: "List of host IDs that should add the storage pool",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(3 * time.Minute),
@@ -126,10 +143,9 @@ func resourceStoragePool() *schema.Resource {
 	}
 }
 
-func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
-	var storage *rest.StoragePool
-	storage = &rest.StoragePool{
+func storagePoolFromResource(d *schema.ResourceData) *rest.StoragePool {
+	storage := rest.StoragePool{
+		ID:   d.Id(),
 		Name: d.Get("name").(string),
 		Type: d.Get("type").(string),
 	}
@@ -192,6 +208,21 @@ func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m in
 		}
 	}
 
+	storage.Tags = []string{"global"}
+	for _, value := range d.Get("tags").([]interface{}) {
+		storage.Tags = append(storage.Tags, value.(string))
+	}
+
+	for _, value := range d.Get("hosts").([]interface{}) {
+		storage.Hosts = append(storage.Hosts, value.(string))
+	}
+
+	return &storage
+}
+
+func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*rest.Client)
+	storage := storagePoolFromResource(d)
 	_, err := storage.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,6 +232,16 @@ func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 	d.SetId(storage.ID)
+	return resourceStoragePoolRead(ctx, d, m)
+}
+
+func resourceStoragePoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*rest.Client)
+	storage := storagePoolFromResource(d)
+	_, err := storage.Update(client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return resourceStoragePoolRead(ctx, d, m)
 }
 
@@ -224,11 +265,21 @@ func resourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("username", storage.Username)
 	d.Set("mount_options", storage.MountOptions)
 	d.Set("roles", storage.Roles)
-	d.Set("s3_acess_key_id", storage.S3AccessKeyID)
+	d.Set("s3_access_key_id", storage.S3AccessKeyID)
 	d.Set("s3_region", storage.S3Region)
 
 	d.Set("fs_name", storage.FSName)
 	d.Set("device", storage.Device)
+
+	tags := slices.DeleteFunc(storage.Tags, func(tag string) bool {
+		return tag == "global"
+	})
+	if err := d.Set("tags", tags); err != nil {
+		return diag.FromErr(err)
+	}
+	if len(storage.Hosts) > 0 {
+		d.Set("hosts", storage.Hosts)
+	}
 
 	return diag.Diagnostics{}
 }
