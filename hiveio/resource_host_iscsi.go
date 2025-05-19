@@ -53,15 +53,54 @@ func resourceHostIscsi() *schema.Resource {
 				Sensitive:   true,
 				Default:     "",
 			},
-			"device_name": {
-				Type:        schema.TypeString,
-				Description: "device name",
+			"block_devices": {
+				Type:        schema.TypeList,
+				Description: "list of block devices",
 				Computed:    true,
-			},
-			"device_path": {
-				Type:        schema.TypeString,
-				Description: "name of the link in /dev/disk/by-path",
-				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Description: "name of the block device",
+							Computed:    true,
+						},
+						"path": {
+							Type:        schema.TypeString,
+							Description: "path of the block device",
+							Computed:    true,
+						},
+						"fstype": {
+							Type:        schema.TypeString,
+							Description: "filesystem type of the block device",
+							Computed:    true,
+						},
+						"model": {
+							Type:        schema.TypeString,
+							Description: "model of the block device",
+							Computed:    true,
+						},
+						"vendor": {
+							Type:        schema.TypeString,
+							Description: "vendor of the block device",
+							Computed:    true,
+						},
+						"serial": {
+							Type:        schema.TypeString,
+							Description: "serial number of the block device",
+							Computed:    true,
+						},
+						"size": {
+							Type:        schema.TypeString,
+							Description: "size of the block device in bytes",
+							Computed:    true,
+						},
+						"label": {
+							Type:        schema.TypeString,
+							Description: "label of the block device",
+							Computed:    true,
+						},
+					},
+				},
 			},
 			"discovered_portal": {
 				Type:        schema.TypeString,
@@ -155,10 +194,29 @@ func resourceHostIscsiRead(ctx context.Context, d *schema.ResourceData, m interf
 		}
 
 		d.SetId(fmt.Sprintf("%s/%s", session.Portal, session.Target))
-		d.Set("discovered_portal", session.Portal)
-		d.Set("target", session.Target)
-		d.Set("device_name", session.BlockDevice.Name)
-		d.Set("device_path", session.BlockDevice.Path)
+		if err := d.Set("discovered_portal", session.Portal); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("target", session.Target); err != nil {
+			return diag.FromErr(err)
+		}
+		blockDevices := make([]interface{}, len(session.BlockDevices))
+		for i, device := range session.BlockDevices {
+			blockDevices[i] = map[string]interface{}{
+				"name":   device.Name,
+				"path":   device.Path,
+				"fstype": device.Fstype,
+				"model":  device.Model,
+				"vendor": device.Vendor,
+				"serial": device.Serial,
+				"size":   device.Size,
+				"label":  device.Label,
+			}
+		}
+		err = d.Set("block_devices", blockDevices)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 		return diag.Diagnostics{}
 	}

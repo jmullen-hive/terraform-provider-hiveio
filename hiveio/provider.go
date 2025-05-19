@@ -103,6 +103,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	client := &rest.Client{Host: d.Get("host").(string), Port: uint(d.Get("port").(int)), AllowInsecure: d.Get("insecure").(bool)}
 	err := client.Login(d.Get("username").(string), d.Get("password").(string), d.Get("realm").(string))
-	fmt.Println(err)
 	return client, err
 }
