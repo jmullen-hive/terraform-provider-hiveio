@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
@@ -63,6 +64,7 @@ func userFromResource(d *schema.ResourceData) (*rest.User, error) {
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	user, err := userFromResource(d)
+	user.ID = uuid.New().String()
 	if err != nil {
 		return diag.FromErr(err)
 	}
