@@ -110,7 +110,7 @@ func resourceTemplate() *schema.Resource {
 						},
 						"vlan": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Optional: true,
 						},
 						"emulation": {
 							Type:     schema.TypeString,
@@ -264,6 +264,14 @@ func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, m inter
 	_, err := template.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	time.Sleep(5 * time.Second)
+	template, err = client.GetTemplate(template.Name)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if template.State != "available" {
+		return diag.FromErr(fmt.Errorf("template %s is not available", template.Name))
 	}
 	d.SetId(template.Name)
 	return resourceTemplateRead(ctx, d, m)
