@@ -137,7 +137,7 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 	gbSize := disk.VirtualSize / 1024 / 1024 / 1024
-	if (size - gbSize) > 0 {
+	if size > gbSize {
 		task, err = storage.GrowDisk(client, filename, size-gbSize)
 		if err != nil {
 			return diag.FromErr(err)
@@ -172,7 +172,6 @@ func resourceDiskRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	} else if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set("size", disk.VirtualSize/1024/1024/1024)
 	d.Set("format", disk.Format)
 	return diag.Diagnostics{}
 }
