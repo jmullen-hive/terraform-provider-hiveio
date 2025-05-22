@@ -2,6 +2,7 @@ package hiveio
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -83,6 +84,19 @@ func resourceHost() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"state": {
+				Type:        schema.TypeString,
+				Description: "host state",
+				Optional:    true,
+				Default:     "available",
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					if v != "available" && v != "maintenance" {
+						errs = append(errs, errors.New("state must be available or maintenance"))
+					}
+					return
+				},
+			},
 		},
 	}
 }
@@ -102,23 +116,26 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	var hostid string
 	for _, host := range hosts {
 		if host.IP == hostIP || host.Hostname == hostIP {
-			d.SetId(host.Hostid)
-			return resourceHostRead(ctx, d, m)
+			hostid = host.Hostid
+			break
 		}
 	}
-	task, err := client.JoinHost(d.Get("username").(string), d.Get("password").(string), hostIP)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	task, err = task.WaitForTaskWithContext(ctx, client, false)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	hostid := task.Ref.Host
-	if task.State == "failed" {
-		return diag.Errorf("Failed to Add Host: %s", task.Message)
+	if hostid == "" {
+		task, err := client.JoinHost(d.Get("username").(string), d.Get("password").(string), hostIP)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		hostid = task.Ref.Host
+		if task.State == "failed" {
+			return diag.Errorf("Failed to Add Host: %s", task.Message)
+		}
 	}
 	host, err := client.GetHost(hostid)
 	if err != nil {
@@ -126,25 +143,36 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	// Add a delay to ensure the host is fully joined
 	time.Sleep(5 * time.Second)
-	if gatewayOnly, ok := d.Get("gateway_only").(bool); ok && gatewayOnly {
-		if gatewayOnly && host.Appliance.Role != "gateway" {
-			host.ChangeGatewayMode(client, true)
-		} else if !gatewayOnly && host.Appliance.Role == "gateway" {
-			host.ChangeGatewayMode(client, false)
+	gatewayOnly := d.Get("gateway_only").(bool)
+	if gatewayOnly && host.Appliance.Role != "gateway" {
+		if err := host.ChangeGatewayMode(client, true); err != nil {
+			return diag.FromErr(err)
 		}
-	} else {
-		task, err = host.SetState(client, "available")
+		time.Sleep(5 * time.Second) //TODO: change this api to return a task
+	} else if !gatewayOnly && host.Appliance.Role == "gateway" {
+		if err := host.ChangeGatewayMode(client, false); err != nil {
+			return diag.FromErr(err)
+		}
+		time.Sleep(5 * time.Second) //TODO: change this api to return a task
+		host, err = client.GetHost(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	task, err = task.WaitForTaskWithContext(ctx, client, false)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if task.State == "failed" {
-		return diag.Errorf("Failed to set host state: %s", task.Message)
+	state := d.Get("state").(string)
+	if !gatewayOnly && host.State != state {
+		task, err := host.SetState(client, state)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if task.State == "failed" {
+			return diag.Errorf("Failed to set host state: %s", task.Message)
+		}
 	}
 	time.Sleep(10 * time.Second)
 	host, err = client.GetHost(hostid)
@@ -218,6 +246,40 @@ func resourceHostUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	gatewayOnly := d.Get("gateway_only").(bool)
+	if gatewayOnly && host.Appliance.Role != "gateway" {
+		if err := host.ChangeGatewayMode(client, true); err != nil {
+			return diag.FromErr(err)
+		}
+		time.Sleep(5 * time.Second) //TODO: change this api to return a task
+		d.SetId(host.Hostid)
+		return resourceHostRead(ctx, d, m)
+	} else if !gatewayOnly && host.Appliance.Role == "gateway" {
+		if err := host.ChangeGatewayMode(client, false); err != nil {
+			return diag.FromErr(err)
+		}
+		time.Sleep(5 * time.Second) //TODO: change this api to return a task
+		host, err = client.GetHost(d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	state := d.Get("state").(string)
+	if !gatewayOnly && host.State != state {
+		task, err := host.SetState(client, state)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		task, err = task.WaitForTaskWithContext(ctx, client, false)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if task.State == "failed" {
+			return diag.Errorf("Failed to set host state: %s", task.Message)
+		}
+	}
+
 	updateAppliance := false
 	if logLevel, ok := d.Get("log_level").(string); ok {
 		if logLevel != "" && host.Appliance.Loglevel != logLevel {
