@@ -98,8 +98,6 @@ github.com/hashicorp/terraform-svchost v0.1.1 h1:EZZimZ1GxdqFRinZ1tpJwVxxt49xc/S
 github.com/hashicorp/terraform-svchost v0.1.1/go.mod h1:mNsjQfZyf/Jhz35v6/0LWcv26+X7JPS+buii2c9/ctc=
 github.com/hashicorp/yamux v0.1.2 h1:XtB8kyFOyHXYVFnwT5C3+Bdo8gArse7j2AQ0DA0Uey8=
 github.com/hashicorp/yamux v0.1.2/go.mod h1:C+zze2n6e/7wshOZep2A70/aQU6QBRWJO/G6FT1wIns=
-github.com/hive-io/hive-go-client v0.0.0-20250428195241-106660dfa331 h1:YbUP7AWX2e6M9OHK7Je1vNChnCJgndbcbHW/Hc7iusk=
-github.com/hive-io/hive-go-client v0.0.0-20250428195241-106660dfa331/go.mod h1:kLimvOtw1iy5EQ19pczEdXUx8V3qjuiL9OmbqrxKRkM=
 github.com/hive-io/hive-go-client v0.0.0-20250519161732-aa3667daa504 h1:iFqWsjHHLOiX3YpKhraBaskaU8imy2xHx/duj7LssVI=
 github.com/hive-io/hive-go-client v0.0.0-20250519161732-aa3667daa504/go.mod h1:kLimvOtw1iy5EQ19pczEdXUx8V3qjuiL9OmbqrxKRkM=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=

@@ -233,6 +233,25 @@ func resourceVM() *schema.Resource {
 					},
 				},
 			},
+			"wait_for_ready": {
+				Type:        schema.TypeBool,
+				Default:     true,
+				Description: "Wait for the VM to be ready before returning. Default is true.",
+				Optional:    true,
+			},
+			"wait_for_ready_method": {
+				Type:        schema.TypeString,
+				Default:     "targetState",
+				Description: "Wait for the VM to reach a specific state. Allowed values are 'targetState', 'ready', and 'ipAddress'.",
+				Optional:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					if v != "targetState" && v != "ready" && v != "ipAddress" {
+						errs = append(errs, fmt.Errorf("%q must be targetState, ready, or ipAddress", key))
+					}
+					return
+				},
+			},
 		},
 	}
 
@@ -359,30 +378,34 @@ func resourceVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
-	guestName := strings.ToUpper(pool.Name)
-	guestName = strings.ReplaceAll(guestName, " ", "_")
-	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
-		guest, err := client.GetGuest(guestName)
-		if err != nil {
-			if strings.Contains(err.Error(), "\"error\": 404") {
-				time.Sleep(5 * time.Second)
-				return retry.RetryableError(fmt.Errorf("building pool %s", pool.ID))
+	if d.Get("wait_for_ready").(bool) {
+		guestName := strings.ToUpper(pool.Name)
+		guestName = strings.ReplaceAll(guestName, " ", "_")
+		err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *retry.RetryError {
+			guest, err := client.GetGuest(guestName)
+			if err != nil {
+				if strings.Contains(err.Error(), "\"error\": 404") {
+					time.Sleep(5 * time.Second)
+					return retry.RetryableError(fmt.Errorf("building pool %s", pool.ID))
+				}
+				return retry.NonRetryableError(err)
 			}
-			return retry.NonRetryableError(err)
-		}
-		for _, v := range guest.TargetState {
-			if v == guest.GuestState {
-				return nil
+			method := d.Get("wait_for_ready_method").(string)
+			if method == "targetState" {
+				err = guest.WaitForGuestWithContext(ctx, client, d.Timeout(schema.TimeoutCreate))
+			} else if method == "ready" {
+				err = guest.WaitForGuestChange(ctx, client, d.Timeout(schema.TimeoutCreate), rest.IsGuestReady)
+			} else if method == "ipAddress" {
+				err = guest.WaitForGuestChange(ctx, client, d.Timeout(schema.TimeoutCreate), rest.GuestHasIpAddress)
 			}
-		}
-		err = guest.WaitForGuestWithContext(ctx, client, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			return nil
+		})
 		if err != nil {
-			return retry.NonRetryableError(err)
+			return diag.FromErr(err)
 		}
-		return nil
-	})
-	if err != nil {
-		return diag.FromErr(err)
 	}
 	d.SetId(pool.ID)
 	return resourceVMRead(ctx, d, m)
@@ -433,7 +456,9 @@ func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 			}
 
 		}
-		d.Set("interface", interfaces)
+		if err := d.Set("interface", interfaces); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		for i, iface := range pool.GuestProfile.Interfaces {
 			interfaces[i] = map[string]interface{}{

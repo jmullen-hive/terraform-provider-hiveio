@@ -90,7 +90,7 @@ func resourceHost() *schema.Resource {
 func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*rest.Client)
 	var hostIP string
-	if ip, ok := d.GetOk("ip"); ok {
+	if ip, ok := d.GetOk("ip_address"); ok {
 		hostIP = ip.(string)
 	} else if hostname, ok := d.GetOk("hostname"); ok {
 		//try adding by hostname
