@@ -66,6 +66,7 @@ func resourceVM() *schema.Resource {
 			"disk": {
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
@@ -251,6 +252,11 @@ func resourceVM() *schema.Resource {
 					}
 					return
 				},
+			},
+			"guest_name": {
+				Type:        schema.TypeString,
+				Description: "The name of the vm from the guest record",
+				Computed:    true,
 			},
 		},
 	}
@@ -457,6 +463,9 @@ func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 
 		}
 		if err := d.Set("interface", interfaces); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("guest_name", guestRecord.Name); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
