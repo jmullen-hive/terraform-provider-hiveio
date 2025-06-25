@@ -205,14 +205,17 @@ func dataSourceProfile() *schema.Resource {
 					},
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func dataSourceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var profile *rest.Profile
-	var err error
 
 	id, idOk := d.GetOk("id")
 	name, nameOk := d.GetOk("name")

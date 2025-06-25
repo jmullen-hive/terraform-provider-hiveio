@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceLicense() *schema.Resource {
@@ -36,12 +35,16 @@ func resourceLicense() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func resourceLicenseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	clusterID, err := client.ClusterID()
 	if err != nil {
 		return diag.FromErr(err)
@@ -59,7 +62,10 @@ func resourceLicenseCreate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceLicenseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	clusterID, err := client.ClusterID()
 	if err != nil {
 		return diag.FromErr(err)

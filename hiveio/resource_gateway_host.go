@@ -42,12 +42,16 @@ func resourceGatewayHost() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func resourceGatewayHostCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	if _, err := client.GetHost(d.Get("hostid").(string)); err != nil {
 		return diag.Errorf("host %s not found", d.Get("hostid").(string))
 	}
@@ -82,7 +86,10 @@ func resourceGatewayHostCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceGatewayHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	clusterId, err := client.ClusterID()
 	if err != nil {
 		return diag.FromErr(err)
@@ -114,7 +121,10 @@ func resourceGatewayHostRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceGatewayHostDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	hostid := d.Get("hostid").(string)
 	clusterId, err := client.ClusterID()
 	if err != nil {

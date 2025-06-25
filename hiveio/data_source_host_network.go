@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hive-io/hive-go-client/rest"
 )
 
 func dataSourceHostNetwork() *schema.Resource {
@@ -59,13 +58,17 @@ func dataSourceHostNetwork() *schema.Resource {
 				Description: "dns search path",
 				Computed:    true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func dataSourceHostNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
-	var err error
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	host, err := client.GetHost(d.Get("hostid").(string))
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")

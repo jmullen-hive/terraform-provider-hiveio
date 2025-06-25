@@ -40,6 +40,7 @@ func resourceUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
@@ -62,7 +63,10 @@ func userFromResource(d *schema.ResourceData) (*rest.User, error) {
 }
 
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	user, err := userFromResource(d)
 	user.ID = uuid.New().String()
 	if err != nil {
@@ -78,9 +82,11 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var user *rest.User
-	var err error
 	user, err = client.GetUser(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -100,7 +106,10 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	user, err := userFromResource(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -113,7 +122,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	user, err := client.GetUser(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

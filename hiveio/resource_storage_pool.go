@@ -136,6 +136,7 @@ func resourceStoragePool() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(3 * time.Minute),
@@ -221,9 +222,12 @@ func storagePoolFromResource(d *schema.ResourceData) *rest.StoragePool {
 }
 
 func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	storage := storagePoolFromResource(d)
-	_, err := storage.Create(client)
+	_, err = storage.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -236,9 +240,12 @@ func resourceStoragePoolCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceStoragePoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	storage := storagePoolFromResource(d)
-	_, err := storage.Update(client)
+	_, err = storage.Update(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -246,9 +253,11 @@ func resourceStoragePoolUpdate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var storage *rest.StoragePool
-	var err error
 	storage, err = client.GetStoragePool(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -285,7 +294,10 @@ func resourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceStoragePoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	storage, err := client.GetStoragePool(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

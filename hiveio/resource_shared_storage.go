@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hive-io/hive-go-client/rest"
 )
 
 func resourceSharedStorage() *schema.Resource {
@@ -54,6 +53,7 @@ func resourceSharedStorage() *schema.Resource {
 				},
 				ForceNew: true,
 			},
+			"provider_override": &providerOverride,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(3 * time.Minute),
@@ -62,7 +62,10 @@ func resourceSharedStorage() *schema.Resource {
 }
 
 func resourceSharedStorageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	setSize := d.Get("minimum_set_size").(int)
 	utilization := d.Get("utilization").(int)
 	clusterID, err := client.ClusterID()
@@ -110,7 +113,10 @@ func resourceSharedStorageCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceSharedStorageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	clusterID, err := client.ClusterID()
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,8 +140,11 @@ func resourceSharedStorageRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceSharedStorageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
-	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
 		clusterID, err := client.ClusterID()
 		if err != nil {
 			return retry.NonRetryableError(err)

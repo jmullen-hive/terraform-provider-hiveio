@@ -71,12 +71,35 @@ func resourceDisk() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"backing_storage": {
+				Description: "The storage pool id of an existing disk to use as a backing file.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"backing_filename": {
+				Description: "The filename of an existing disk to use as a backing file.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"backing_format": {
+				Description: "The format of an existing disk to use as a backing file.",
+				Type:        schema.TypeString,
+				Default:     "qcow2",
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	id := d.Get("storage_pool").(string)
 	filename := d.Get("filename").(string)
 	format := d.Get("format").(string)
@@ -87,7 +110,6 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 	srcURL, srcURLOk := d.GetOk("src_url")
 	localFile, localFileOk := d.GetOk("local_file")
 
-	var err error
 	var task *rest.Task
 	var storage *rest.StoragePool
 	storage, err = client.GetStoragePool(id)
@@ -115,7 +137,17 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 	} else if srcURLOk {
 		task, err = storage.CopyURL(client, srcURL.(string), filename)
 	} else {
-		task, err = storage.CreateDisk(client, filename, format, size)
+		var backingFile *rest.StorageDisk
+		backingStorage, backingStorageOk := d.GetOk("backing_storage")
+		backingFilename, backingFilenameOk := d.GetOk("backing_filename")
+		if backingStorageOk && backingFilenameOk {
+			backingFile = &rest.StorageDisk{
+				StorageID: backingStorage.(string),
+				Filename:  backingFilename.(string),
+				Format:    d.Get("backing_format").(string),
+			}
+		}
+		task, err = storage.CreateDisk(client, filename, format, size, backingFile)
 	}
 
 	if err != nil {
@@ -155,7 +187,10 @@ func resourceDiskCreate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceDiskRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	id := d.Get("storage_pool").(string)
 	filename := d.Get("filename").(string)
 	storage, err := client.GetStoragePool(id)
@@ -177,7 +212,10 @@ func resourceDiskRead(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceDiskDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	id := d.Get("storage_pool").(string)
 	storage, err := client.GetStoragePool(id)
 	if err != nil {

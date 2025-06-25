@@ -97,12 +97,20 @@ func resourceHost() *schema.Resource {
 					return
 				},
 			},
+			"existing_host": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var hostIP string
 	if ip, ok := d.GetOk("ip_address"); ok {
 		hostIP = ip.(string)
@@ -136,6 +144,8 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 		if task.State == "failed" {
 			return diag.Errorf("Failed to Add Host: %s", task.Message)
 		}
+	} else {
+		d.Set("existing_host", true)
 	}
 	host, err := client.GetHost(hostid)
 	if err != nil {
@@ -218,9 +228,11 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var host rest.Host
-	var err error
 	host, err = client.GetHost(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -241,7 +253,10 @@ func resourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceHostUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	host, err := client.GetHost(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -320,10 +335,18 @@ func resourceHostUpdate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceHostDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	host, err := client.GetHost(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if d.Get("existing_host").(bool) {
+		//host reource was not created by terraform, just remove it from the state
+		d.SetId("")
+		return diag.Diagnostics{}
 	}
 	if host.State == "unreachable" {
 		//Host is unreachable, just delete the record

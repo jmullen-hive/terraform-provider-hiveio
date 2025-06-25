@@ -181,6 +181,7 @@ func resourceTemplate() *schema.Resource {
 					},
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(time.Minute),
@@ -259,9 +260,12 @@ func templateFromResource(d *schema.ResourceData) rest.Template {
 }
 
 func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	template := templateFromResource(d)
-	_, err := template.Create(client)
+	_, err = template.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -278,7 +282,10 @@ func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	template, err := client.GetTemplate(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -343,9 +350,12 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	template := templateFromResource(d)
-	_, err := template.Update(client)
+	_, err = template.Update(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -353,7 +363,10 @@ func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	template, err := client.GetTemplate(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

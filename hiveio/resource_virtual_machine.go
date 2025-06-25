@@ -258,6 +258,7 @@ func resourceVM() *schema.Resource {
 				Description: "The name of the vm from the guest record",
 				Computed:    true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 
@@ -372,10 +373,13 @@ func vmFromResource(d *schema.ResourceData) *rest.Pool {
 }
 
 func resourceVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool := vmFromResource(d)
 
-	_, err := pool.Create(client)
+	_, err = pool.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -397,11 +401,12 @@ func resourceVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 				return retry.NonRetryableError(err)
 			}
 			method := d.Get("wait_for_ready_method").(string)
-			if method == "targetState" {
+			switch method {
+			case "targetState":
 				err = guest.WaitForGuestWithContext(ctx, client, d.Timeout(schema.TimeoutCreate))
-			} else if method == "ready" {
+			case "ready":
 				err = guest.WaitForGuestChange(ctx, client, d.Timeout(schema.TimeoutCreate), rest.IsGuestReady)
-			} else if method == "ipAddress" {
+			case "ipAddress":
 				err = guest.WaitForGuestChange(ctx, client, d.Timeout(schema.TimeoutCreate), rest.GuestHasIpAddress)
 			}
 			if err != nil {
@@ -418,7 +423,10 @@ func resourceVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool, err := client.GetPool(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -524,9 +532,12 @@ func resourceVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 }
 
 func resourceVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool := vmFromResource(d)
-	_, err := pool.Update(client)
+	_, err = pool.Update(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -534,7 +545,10 @@ func resourceVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool, err := client.GetPool(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

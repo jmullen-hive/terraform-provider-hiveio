@@ -51,14 +51,17 @@ func dataSourceStoragePool() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func dataSourceStoragePoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var storage *rest.StoragePool
-	var err error
 
 	id, idOk := d.GetOk("id")
 	name, nameOk := d.GetOk("name")

@@ -61,6 +61,7 @@ func resourceRealm() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
@@ -90,9 +91,12 @@ func realmFromResource(d *schema.ResourceData) rest.Realm {
 }
 
 func resourceRealmCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	realm := realmFromResource(d)
-	_, err := realm.Create(client)
+	_, err = realm.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,9 +105,11 @@ func resourceRealmCreate(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceRealmRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var realm rest.Realm
-	var err error
 	realm, err = client.GetRealm(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -122,9 +128,12 @@ func resourceRealmRead(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceRealmUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	realm := realmFromResource(d)
-	_, err := realm.Update(client)
+	_, err = realm.Update(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,7 +141,10 @@ func resourceRealmUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceRealmDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	realm, err := client.GetRealm(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

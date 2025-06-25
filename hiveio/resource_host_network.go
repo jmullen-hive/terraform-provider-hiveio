@@ -68,6 +68,7 @@ func resourceHostNetwork() *schema.Resource {
 			// 	Default:     "",
 			// 	Optional:    true,
 			// },
+			"provider_override": &providerOverride,
 		},
 	}
 }
@@ -97,7 +98,10 @@ func HostNetworkFromResource(d *schema.ResourceData) rest.HostNetwork {
 }
 
 func resourceHostNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	hostNetwork := HostNetworkFromResource(d)
 	hostid := d.Get("hostid").(string)
 	host, err := client.GetHost(hostid)
@@ -113,8 +117,10 @@ func resourceHostNetworkCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceHostNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
-	var err error
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	host, err := client.GetHost(d.Get("hostid").(string))
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -139,7 +145,10 @@ func resourceHostNetworkRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceHostNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	hostNetwork := HostNetworkFromResource(d)
 	hostid := d.Get("hostid").(string)
 	host, err := client.GetHost(hostid)
@@ -154,7 +163,10 @@ func resourceHostNetworkUpdate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceHostNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	host, err := client.GetHost(d.Get("hostid").(string))
 	if err != nil {
 		return diag.FromErr(err)

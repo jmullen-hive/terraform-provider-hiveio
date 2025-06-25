@@ -122,6 +122,7 @@ func resourceExternalGuest() *schema.Resource {
 					},
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
@@ -167,10 +168,13 @@ func guestFromResource(d *schema.ResourceData) rest.ExternalGuest {
 }
 
 func resourceExternalGuestCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	guest := guestFromResource(d)
 
-	_, err := guest.Create(client)
+	_, err = guest.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -179,7 +183,10 @@ func resourceExternalGuestCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceExternalGuestRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	guest, err := client.GetGuest(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -219,7 +226,10 @@ func resourceExternalGuestRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceExternalGuestDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	guest, err := client.GetGuest(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

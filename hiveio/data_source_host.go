@@ -33,12 +33,16 @@ func dataSourceHost() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
 
 func dataSourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var host rest.Host
 
 	if ip, ok := d.GetOk("ip"); ok {

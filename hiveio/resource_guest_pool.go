@@ -188,6 +188,7 @@ func resourceGuestPool() *schema.Resource {
 					},
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
@@ -277,7 +278,10 @@ func poolFromResource(d *schema.ResourceData) *rest.Pool {
 }
 
 func resourceGuestPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool := poolFromResource(d)
 
 	template, err := client.GetTemplate(pool.GuestProfile.TemplateName)
@@ -309,7 +313,10 @@ func resourceGuestPoolCreate(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceGuestPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool, err := client.GetPool(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -372,7 +379,10 @@ func resourceGuestPoolRead(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceGuestPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool := poolFromResource(d)
 
 	template, err := client.GetTemplate(pool.GuestProfile.TemplateName)
@@ -395,7 +405,10 @@ func resourceGuestPoolUpdate(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceGuestPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	pool, err := client.GetPool(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -219,6 +219,7 @@ func resourceProfile() *schema.Resource {
 					},
 				},
 			},
+			"provider_override": &providerOverride,
 		},
 	}
 }
@@ -295,9 +296,12 @@ func profileFromResource(d *schema.ResourceData) *rest.Profile {
 }
 
 func resourceProfileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	profile := profileFromResource(d)
-	_, err := profile.Create(client)
+	_, err = profile.Create(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -310,9 +314,11 @@ func resourceProfileCreate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var profile *rest.Profile
-	var err error
 	profile, err = client.GetProfile(d.Id())
 	if err != nil && strings.Contains(err.Error(), "\"error\": 404") {
 		d.SetId("")
@@ -385,9 +391,12 @@ func resourceProfileRead(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceProfileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	profile := profileFromResource(d)
-	_, err := profile.Update(client)
+	_, err = profile.Update(client)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -395,7 +404,10 @@ func resourceProfileUpdate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceProfileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*rest.Client)
+	client, err := getClient(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	profile, err := client.GetProfile(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
