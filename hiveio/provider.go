@@ -131,6 +131,7 @@ func Provider() *schema.Provider {
 			"hiveio_storage_pool": dataSourceStoragePool(),
 			"hiveio_host":         dataSourceHost(),
 			"hiveio_host_network": dataSourceHostNetwork(),
+			"hiveio_version":      dataSourceVersion(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"hiveio_host":            resourceHost(),
