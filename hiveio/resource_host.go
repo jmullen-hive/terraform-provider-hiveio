@@ -3,10 +3,12 @@ package hiveio
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hive-io/hive-go-client/rest"
 )
@@ -132,17 +134,29 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 		}
 	}
 	if hostid == "" {
-		task, err := client.JoinHost(d.Get("username").(string), d.Get("password").(string), hostIP)
+		retries := 1
+		err = retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {
+			task, err := client.JoinHost(d.Get("username").(string), d.Get("password").(string), hostIP)
+			if err != nil {
+				if retries > 0 && strings.Contains(err.Error(), "InternalServer") {
+					time.Sleep(5 * time.Second)
+					retries--
+					return retry.RetryableError(err)
+				}
+				return retry.NonRetryableError(err)
+			}
+			task, err = task.WaitForTaskWithContext(ctx, client, false)
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			hostid = task.Ref.Host
+			if task.State == "failed" {
+				return retry.NonRetryableError(fmt.Errorf("failed to Add Host: %s", task.Message))
+			}
+			return nil
+		})
 		if err != nil {
 			return diag.FromErr(err)
-		}
-		task, err = task.WaitForTaskWithContext(ctx, client, false)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		hostid = task.Ref.Host
-		if task.State == "failed" {
-			return diag.Errorf("Failed to Add Host: %s", task.Message)
 		}
 	} else {
 		d.Set("existing_host", true)
