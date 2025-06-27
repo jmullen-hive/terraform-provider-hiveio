@@ -3,7 +3,6 @@ package hiveio
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -44,12 +43,6 @@ func dataSourceVersionRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	tflog.Info(ctx, "Retrieved host version", map[string]interface{}{
-		"version": version.Version,
-		"major":   version.Major,
-		"minor":   version.Minor,
-		"patch":   version.Patch,
-	})
 	d.Set("version", version.Version)
 	d.Set("major", version.Major)
 	d.Set("minor", version.Minor)
