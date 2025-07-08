@@ -36,14 +36,26 @@ func resourceExternalGuest() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"profile": {
+				Description: "The id of a profile to use for the guest in version 8.6.0 and later.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"username": {
-				Description: "The user the guest will be assigned to",
+				Description: "The user assignment for broker access",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
+			"ad_group": {
+				Description: "The active directory group assignment for broker access",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"realm": {
-				Description: "The realm of the user",
+				Description: "The realm of the user or ad_group.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -132,6 +144,8 @@ func guestFromResource(d *schema.ResourceData) rest.ExternalGuest {
 		GuestName:        d.Get("name").(string),
 		Address:          d.Get("address").(string),
 		Username:         d.Get("username").(string),
+		ADGroup:          d.Get("ad_group").(string),
+		ProfileID:        d.Get("profile").(string),
 		Realm:            d.Get("realm").(string),
 		DisablePortCheck: d.Get("disable_port_check").(bool),
 	}
@@ -198,6 +212,8 @@ func resourceExternalGuestRead(ctx context.Context, d *schema.ResourceData, m in
 	d.Set("name", guest.Name)
 	d.Set("address", guest.Address)
 	d.Set("username", guest.Username)
+	d.Set("ad_group", guest.ADGroup)
+	d.Set("profile", guest.ProfileID)
 	d.Set("realm", guest.Realm)
 	d.Set("os", guest.Os)
 	d.Set("disable_port_check", guest.DisablePortCheck)
