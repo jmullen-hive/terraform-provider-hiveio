@@ -20,11 +20,12 @@ The profile data source can be used to retrieve settings from an existing profil
 - `ad_config` (Block List, Max: 1) active directory options (see [below for nested schema](#nestedblock--ad_config))
 - `backup` (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
 - `broker_options` (Block List, Max: 1) (see [below for nested schema](#nestedblock--broker_options))
-- `id` (String) The ID of this resource.
 - `name` (String)
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `timezone` (String)
 - `user_volumes` (List of Object) (see [below for nested schema](#nestedatt--user_volumes))
 
@@ -81,6 +82,22 @@ Optional:
 - `smart_resize` (Boolean) Defaults to `true`.
 
 
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin
+
+
 <a id="nestedatt--user_volumes"></a>
 ### Nested Schema for `user_volumes`
 
@@ -90,5 +107,3 @@ Read-Only:
 - `repository` (String)
 - `size` (Number)
 - `target` (String)
-
-

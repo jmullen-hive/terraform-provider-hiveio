@@ -57,3 +57,14 @@ resource "hiveio_storage_pool" "azure" {
   key      = var.azure_key
   roles    = ["backup"]
 }
+
+#create an ocfs2 storage pool on an iscsi disk and create the fs if it does not exist
+resource "hiveio_storage_pool" "ocsfs2-test" {
+  name              = "ocsfs2-test"
+  type              = "ocfs2"
+  roles             = ["iso", "guest", "template", "backup"]
+  device            = hiveio_host_iscsi.iscsi_test.block_devices[0].path
+  fs_name           = "ocfs2-test"
+  create_filesystem = true # create the filesystem if it does not exist
+  clear_disk        = false
+}

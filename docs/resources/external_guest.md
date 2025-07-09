@@ -36,14 +36,65 @@ resource "hiveio_external_guest" "desktop" {
 
 - `address` (String) Hostname or ip address
 - `name` (String)
-- `realm` (String) The realm of the user
-- `username` (String) The user the guest will be assigned to
+- `realm` (String) The realm of the user or ad_group.
+- `username` (String) The user assignment for broker access
 
 ### Optional
 
-- `id` (String) The ID of this resource.
+- `ad_group` (String) The active directory group assignment for broker access
+- `broker_connection` (Block List) (see [below for nested schema](#nestedblock--broker_connection))
+- `broker_default_connection` (String) Defaults to ``.
+- `disable_port_check` (Boolean) Defaults to `false`.
 - `os` (String)
+- `profile` (String) The id of a profile to use for the guest in version 8.6.0 and later.
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
+<a id="nestedblock--broker_connection"></a>
+### Nested Schema for `broker_connection`
+
+Required:
+
+- `name` (String)
+- `port` (Number)
+- `protocol` (String)
+
+Optional:
+
+- `description` (String) Defaults to ``.
+- `disable_html5` (Boolean) Defaults to `false`.
+- `gateway` (Block List, Max: 1) (see [below for nested schema](#nestedblock--broker_connection--gateway))
+
+<a id="nestedblock--broker_connection--gateway"></a>
+### Nested Schema for `broker_connection.gateway`
+
+Optional:
+
+- `disabled` (Boolean) Defaults to `false`.
+- `persistent` (Boolean) Defaults to `false`.
+- `protocols` (List of String)
+
+
+
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -51,5 +102,3 @@ resource "hiveio_external_guest" "desktop" {
 Optional:
 
 - `delete` (String)
-
-

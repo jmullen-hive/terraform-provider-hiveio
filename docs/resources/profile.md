@@ -65,12 +65,18 @@ resource "hiveio_profile" "test" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `ad_config` (Block List, Max: 1) active directory options (see [below for nested schema](#nestedblock--ad_config))
 - `backup` (Block List, Max: 1) (see [below for nested schema](#nestedblock--backup))
 - `broker_options` (Block List, Max: 1) (see [below for nested schema](#nestedblock--broker_options))
-- `id` (String) The ID of this resource.
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 - `timezone` (String) A timezone to inject to guests in the profile. Defaults to `disabled`.
 - `user_volumes` (Block List, Max: 1) User Volume options. (see [below for nested schema](#nestedblock--user_volumes))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--ad_config"></a>
 ### Nested Schema for `ad_config`
@@ -82,8 +88,10 @@ Required:
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `ou` (String) OU for guests using this profile.
-- `password` (String, Sensitive) Password for the service account.
+- `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password for the service account.
 - `username` (String) Username for a service account to override the one in realm.
 
 
@@ -126,6 +134,22 @@ Optional:
 - `smart_resize` (Boolean) Defaults to `true`.
 
 
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin
+
+
 <a id="nestedblock--user_volumes"></a>
 ### Nested Schema for `user_volumes`
 
@@ -138,5 +162,3 @@ Optional:
 
 - `backup_schedule` (Number)
 - `target` (String)
-
-

@@ -37,7 +37,7 @@ resource "hiveio_virtual_machine" "kubuntu" {
   disk {
     disk_driver = "virtio"
     storage_id  = hiveio_storage_pool.vms.id
-    filename    = "kubuntu-18.10-uefi.qcow2"
+    filename    = "kubuntu-24.04-uefi.qcow2"
     type        = "disk"
   }
   interface {

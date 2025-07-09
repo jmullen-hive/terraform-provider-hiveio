@@ -15,7 +15,7 @@ description: |-
 ```terraform
 resource "hiveio_shared_storage" "shared" {
   minimum_set_size = 3
-  utilization = 60
+  utilization      = 60
 }
 ```
 
@@ -25,15 +25,32 @@ resource "hiveio_shared_storage" "shared" {
 ### Optional
 
 - `hosts` (List of String) helper field to add a dependency on hosts which are added to the cluster at the same time
-- `id` (String) The ID of this resource.
 - `minimum_set_size` (Number) minimum number of hosts required to increase shared storage Defaults to `3`.
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `utilization` (Number) Defaults to `75`.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `name` (String) storage pool name
 - `type` (String) storage pool type
+
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -41,5 +58,3 @@ resource "hiveio_shared_storage" "shared" {
 Optional:
 
 - `delete` (String)
-
-

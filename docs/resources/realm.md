@@ -16,9 +16,9 @@ description: |-
 variable "realm_user" { type = string }
 variable "realm_password" { type = string }
 
-resource "hiveio_realm" "home" {
+resource "hiveio_realm" "test" {
   name     = "TEST"
-  fqdn     = "test.test-domain.net"
+  fqdn     = "test.my.lan"
   username = var.realm_user
   password = var.realm_password
 }
@@ -34,11 +34,29 @@ resource "hiveio_realm" "home" {
 
 ### Optional
 
-- `enabled` (Boolean)
-- `id` (String) The ID of this resource.
+- `alias` (String) Alias for the fqdn for broker login
 - `password` (String, Sensitive) Service Account password
-- `tags` (List of String)
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
+- `site` (String) Active directory site to use instead of Default-First-Site-Name
+- `tls` (Boolean) Require tls for the ldap connection Defaults to `false`.
 - `username` (String) Service Account username
 - `verified` (Boolean)
 
+### Read-Only
 
+- `id` (String) The ID of this resource.
+
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin

@@ -28,11 +28,11 @@ resource "hiveio_disk" "disk2" {
   src_filename = "ubuntu-18.04-cloudimg-hiveio.img"
 }
 
-#Download the bionic cloud image into a storage pool
+#Download the ubuntu 24.04 cloud image into a storage pool
 resource "hiveio_disk" "ubuntu" {
   filename     = "ubuntu.qcow2"
   storage_pool = storage_pool_id
-  src_url      = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
+  src_url      = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 }
 
 #Upload a file to a storage pool
@@ -54,14 +54,37 @@ resource "hiveio_disk" "upload-test" {
 
 ### Optional
 
+- `backing_filename` (String) The filename of an existing disk to use as a backing file.
+- `backing_format` (String) The format of an existing disk to use as a backing file. Defaults to `qcow2`.
+- `backing_storage` (String) The storage pool id of an existing disk to use as a backing file.
 - `format` (String) File format (qcow2 or raw) Defaults to `qcow2`.
-- `id` (String) The ID of this resource.
 - `local_file` (String) A local file to upload to the storage pool.
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 - `size` (Number) Size of the disk in GB Defaults to `30`.
 - `src_filename` (String) The filename of an existing disk to copy.
 - `src_storage` (String) The storage pool id of an existing disk to copy.
 - `src_url` (String) HTTP url for a disk to copy into the storage pool.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -69,5 +92,3 @@ resource "hiveio_disk" "upload-test" {
 Optional:
 
 - `create` (String)
-
-

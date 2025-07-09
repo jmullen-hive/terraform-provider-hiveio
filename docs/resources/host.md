@@ -17,6 +17,7 @@ variable "ip_address" {
   type = string
 }
 
+
 resource "hiveio_host" "host" {
   ip_address = var.ip_address
   username   = "admin"
@@ -29,20 +30,40 @@ resource "hiveio_host" "host" {
 
 ### Required
 
-- `ip_address` (String)
 - `password` (String, Sensitive)
 
 ### Optional
 
 - `gateway_only` (Boolean) Defaults to `false`.
-- `id` (String) The ID of this resource.
+- `hostname` (String)
+- `ip_address` (String)
 - `license` (String) unused field to add a license as a dependency
+- `log_level` (String) set the host log level
+- `max_clone_density` (Number) set the max clone density for the host
+- `ntp_servers` (String) set the ntp servers for the host as a comma separated list
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
+- `state` (String) host state Defaults to `available`.
+- `timezone` (String) set the timezone for the host
 - `username` (String) Defaults to `admin`.
 
 ### Read-Only
 
 - `cluster_id` (String)
+- `existing_host` (Boolean)
 - `hostid` (String)
-- `hostname` (String)
+- `id` (String) The ID of this resource.
 
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
 
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin

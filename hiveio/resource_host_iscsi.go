@@ -17,7 +17,7 @@ func resourceHostIscsi() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
+		Description: "Adds an iscsi disk to a host in the Hive cluster.",
 		Schema: map[string]*schema.Schema{
 			"hostid": {
 				Type:        schema.TypeString,

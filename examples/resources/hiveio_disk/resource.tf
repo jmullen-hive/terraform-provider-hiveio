@@ -16,11 +16,11 @@ resource "hiveio_disk" "disk2" {
   src_filename = "ubuntu-18.04-cloudimg-hiveio.img"
 }
 
-#Download the bionic cloud image into a storage pool
+#Download the ubuntu 24.04 cloud image into a storage pool
 resource "hiveio_disk" "ubuntu" {
   filename     = "ubuntu.qcow2"
   storage_pool = storage_pool_id
-  src_url      = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
+  src_url      = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 }
 
 #Upload a file to a storage pool

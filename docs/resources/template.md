@@ -66,20 +66,49 @@ resource "hiveio_template" "ubuntu_server" {
 
 ### Optional
 
+- `broker_connection` (Block List) (see [below for nested schema](#nestedblock--broker_connection))
+- `broker_default_connection` (String) Defaults to ``.
 - `cpu` (Number) Defaults to `2`.
 - `disk` (Block List) (see [below for nested schema](#nestedblock--disk))
 - `display_driver` (String) Defaults to `cirrus`.
 - `firmware` (String) Defaults to `uefi`.
-- `id` (String) The ID of this resource.
 - `interface` (Block List) (see [below for nested schema](#nestedblock--interface))
 - `manual_agent_install` (Boolean) Defaults to `false`.
 - `mem` (Number) Defaults to `2048`.
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `state` (String)
 - `state_message` (String)
+
+<a id="nestedblock--broker_connection"></a>
+### Nested Schema for `broker_connection`
+
+Required:
+
+- `name` (String)
+- `port` (Number)
+- `protocol` (String)
+
+Optional:
+
+- `description` (String) Defaults to ``.
+- `disable_html5` (Boolean) Defaults to `false`.
+- `gateway` (Block List, Max: 1) (see [below for nested schema](#nestedblock--broker_connection--gateway))
+
+<a id="nestedblock--broker_connection--gateway"></a>
+### Nested Schema for `broker_connection.gateway`
+
+Optional:
+
+- `disabled` (Boolean) Defaults to `false`.
+- `persistent` (Boolean) Defaults to `false`.
+- `protocols` (List of String)
+
+
 
 <a id="nestedblock--disk"></a>
 ### Nested Schema for `disk`
@@ -106,11 +135,27 @@ Read-Only:
 Required:
 
 - `network` (String)
-- `vlan` (Number)
 
 Optional:
 
 - `emulation` (String) Defaults to `virtio`.
+- `vlan` (Number)
+
+
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
+
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin
 
 
 <a id="nestedblock--timeouts"></a>
@@ -119,5 +164,3 @@ Optional:
 Optional:
 
 - `read` (String)
-
-

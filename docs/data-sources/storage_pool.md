@@ -17,16 +17,30 @@ The storage pool data source can be used to retrieve settings from an existing s
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `mount_options` (List of String)
 - `name` (String)
+- `provider_override` (Block List, Max: 1) Override the provider configuration for this resource.  This can be used to connect to a different cluster or change credentials (see [below for nested schema](#nestedblock--provider_override))
 - `username` (String)
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `path` (String)
 - `roles` (List of String)
 - `server` (String)
 - `type` (String)
 
+<a id="nestedblock--provider_override"></a>
+### Nested Schema for `provider_override`
 
+Required:
+
+- `password` (String, Sensitive) The password to use for connection to the server.
+
+Optional:
+
+- `host` (String) hostname or ip address of the server.
+- `insecure` (Boolean) Ignore SSL certificate errors. Defaults to `false`.
+- `port` (Number) The port to use to connect to the server. Defaults to 8443
+- `realm` (String, Sensitive) The realm to use to connect to the server. Defaults to local
+- `username` (String) The username to connect to the server. Defaults to admin

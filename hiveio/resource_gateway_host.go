@@ -16,7 +16,7 @@ func resourceGatewayHost() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
+		Description: "Adds host entries to the gateway settings for the cluster.",
 		Schema: map[string]*schema.Schema{
 			"hostid": {
 				Description: "hostid of the host for the gateway connection",

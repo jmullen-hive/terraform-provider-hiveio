@@ -13,10 +13,6 @@ resource "hiveio_storage_pool" "nfs" {
   roles  = ["guest", "iso", "template"]
 }
 
-/*data "hiveio_storage_pool" "test_sp" {
-  name = hiveio_storage_pool.vms.name
-}*/
-
 resource "hiveio_storage_pool" "cifs" {
   name     = "cifs"
   type     = "cifs"
@@ -28,7 +24,7 @@ resource "hiveio_storage_pool" "cifs" {
 }
 
 variable "s3AccessKey" {
-  type = "string"
+  type = string
 }
 
 resource "hiveio_storage_pool" "s3" {
@@ -42,7 +38,7 @@ resource "hiveio_storage_pool" "s3" {
 }
 
 variable "azureAccessKey" {
-  type = "string"
+  type = string
 }
 
 resource "hiveio_storage_pool" "azure" {
@@ -75,6 +71,16 @@ resource "hiveio_storage_pool" "sftp" {
 resource "hiveio_storage_pool" "http" {
   name  = "http"
   type  = "http"
-  url   = "https://cloud-images.ubuntu.com/bionic/current"
+  url   = "https://cloud-images.ubuntu.com/jammy/current"
   roles = ["iso", "template"]
+}
+
+resource "hiveio_storage_pool" "ocsfs2" {
+  name              = "ocsfs2-test"
+  type              = "ocfs2"
+  roles             = ["iso", "guest", "template"]
+  device            = "/dev/sdb" #path to the shared disk
+  fs_name           = "ocfs2-test"
+  create_filesystem = true
+  clear_disk        = true
 }
