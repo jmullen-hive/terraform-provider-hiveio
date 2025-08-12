@@ -45,7 +45,7 @@ func resourceExternalGuest() *schema.Resource {
 			"username": {
 				Description: "The user assignment for broker access",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"ad_group": {
@@ -57,7 +57,7 @@ func resourceExternalGuest() *schema.Resource {
 			"realm": {
 				Description: "The realm of the user or ad_group.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"os": {
@@ -143,11 +143,22 @@ func guestFromResource(d *schema.ResourceData) rest.ExternalGuest {
 	guest := rest.ExternalGuest{
 		GuestName:        d.Get("name").(string),
 		Address:          d.Get("address").(string),
-		Username:         d.Get("username").(string),
-		ADGroup:          d.Get("ad_group").(string),
-		ProfileID:        d.Get("profile").(string),
-		Realm:            d.Get("realm").(string),
 		DisablePortCheck: d.Get("disable_port_check").(bool),
+	}
+
+	if profile, ok := d.GetOk("profile"); ok {
+		guest.ProfileID = profile.(string)
+	}
+
+	if username, ok := d.GetOk("username"); ok {
+		guest.Username = username.(string)
+	}
+	if adGroup, ok := d.GetOk("ad_group"); ok {
+		guest.ADGroup = adGroup.(string)
+	}
+
+	if realm, ok := d.GetOk("realm"); ok {
+		guest.Realm = realm.(string)
 	}
 
 	if os, ok := d.GetOk("os"); ok {
